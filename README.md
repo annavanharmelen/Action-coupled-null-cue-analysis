@@ -1,4 +1,4 @@
-# LOCATION-BY-COLOUR NULL-CUE ANALYSIS 
+# ACTION-COUPLED NULL-CUE ANALYSIS 
 
 # ***[work in progress]***
 

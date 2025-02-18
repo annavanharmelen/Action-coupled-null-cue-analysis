@@ -5,10 +5,10 @@
 clear; clc; close all;
     
 %% parameters
-pp2do           = [1:25];
+pp2do           = [1:8];
 oneOrTwoD       = 1;        oneOrTwoD_options = {'_1D','_2D'};
 nsmooth         = 200;
-plotSinglePps   = 0;
+plotSinglePps   = 1;
 plotGAs         = 1;
 plotFigures     = 1;
 xlimtoplot      = [-100 1500];
@@ -83,7 +83,7 @@ if plotSinglePps
     for sp = 1:s
         subplot(subplot_size,subplot_size,sp); hold on;
         saccadesize.effect_individual = squeeze(d6(sp,:,:,:)); % put in data from this pp
-        cfg.channel = 2; % colour cue
+        cfg.channel = 2; % congruent
         ft_singleplotTFR(cfg, saccadesize);
         title(pp2do(sp));
     end
@@ -98,7 +98,7 @@ if plotSinglePps
     for sp = 1:s
         subplot(subplot_size,subplot_size,sp); hold on;
         saccadesize.effect_individual = squeeze(d6(sp,:,:,:)); % put in data from this pp
-        cfg.channel = 4; % colour cue colour block
+        cfg.channel = 3; % incongruent
         ft_singleplotTFR(cfg, saccadesize);
         title(pp2do(sp));
     end
@@ -109,7 +109,7 @@ end
 if plotGAs
     % right and left cues, per condition
     figure;
-    for sp = [1,2,4,6]
+    for sp = [1:4]
         subplot(2,4,sp); hold on; title(saccade.label(sp));
         p1 = frevede_errorbarplot(saccade.time, squeeze(d1(:,sp,:)), [1,0,0], 'se');
         p2 = frevede_errorbarplot(saccade.time, squeeze(d2(:,sp,:)), [0,0,1], 'se');
@@ -120,7 +120,7 @@ if plotGAs
     
     % towardness per condition - gaze shift effect X saccade size
     figure;
-    for sp = [1,2,4,6]
+    for sp = [1:4]
         subplot(2,4,sp); hold on; title(saccade.label(sp));
         frevede_errorbarplot(saccade.time, squeeze(d3(:,sp,:)), [0,0,0], 'both');
         plot(xlim, [0,0], '--k');
@@ -149,7 +149,7 @@ if plotGAs
     cfg.colormap = 'jet';
     % per condition
     figure;
-    for chan = [1,2,4,6]
+    for chan = [1:4]
         cfg.channel = chan;
         subplot(2,4,chan); ft_singleplotTFR(cfg, saccadesize);
     end
@@ -168,13 +168,15 @@ if plotFigures
     %% towardness overlay of colcue_colprobe and colcue_locprobe
     figure;
     hold on;
-    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,4,:)), colours(2,:), 'se');
-    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,6,:)), colours(1,:), 'se');
+    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,2,:)), colours(2,:), 'se');
+    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,3,:)), colours(2,:), 'se');
+    p3 = frevede_errorbarplot(saccade.time, squeeze(d3(:,4,:)), colours(1,:), 'se');
     p1.LineWidth = 1.5;
     p2.LineWidth = 1.5;
+    p3.LineWidth = 1.5;
     plot(xlim, [0,0], '--k');
     plot([0,0], ylimit, '--k');
-    legend([p1, p2], saccade.label([4,6]));
+    legend([p1, p2, p3], saccade.label([2:4]));
     xlim(xlimtoplot);
     ylabel('Rate (Hz)');
     xlabel('Time (ms)');

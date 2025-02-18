@@ -6,9 +6,9 @@ clc
 see_performance = 0;
 display_percentageok = 1;
 plot_individuals = 0;
-plot_averages = 1;
+plot_averages = 0;
 
-pp2do = [1:25]; 
+pp2do = [1:8]; 
 p = 0;
 
 [bar_size, colours, dark_colours, labels, subplot_size, percentageok] = setBehaviourParam(pp2do);
@@ -29,8 +29,8 @@ for pp = pp2do
     behdata.signed_difference(behdata.signed_difference<-90) = behdata.signed_difference(behdata.signed_difference<-90)+180;
     
     %% check ok trials, just based on decision time, because this one is unlimited.
-    % oktrials = abs(zscore(behdata.idle_reaction_time_in_ms))<=3; 
-    oktrials = abs(zscore(behdata.absolute_difference))<=3; 
+    oktrials = abs(zscore(behdata.idle_reaction_time_in_ms))<=3; 
+    % oktrials = abs(zscore(behdata.absolute_difference))<=3; 
     percentageok(p) = mean(oktrials)*100;
 
     %% display percentage OK
@@ -71,275 +71,127 @@ for pp = pp2do
     end
     
     %% trial selections
-    location_probe_trials = ismember(behdata.block_type, {'location_probe'});
-    colour_probe_trials = ismember(behdata.block_type, {'colour_probe'});
+    colour_one_trials = behdata.capture_colour_id == 1;
+    colour_two_trials = behdata.capture_colour_id == 2;
+    colour_three_trials = behdata.capture_colour_id == 3;
 
-    location_cue_trials = ismember(behdata.cue_form, {'location_cue'});
-    colour_cue_trials = ismember(behdata.cue_form, {'colour_cue'});
+    respond_trials = ismember(behdata.block_type, {'respond 3'});
+    not_respond_trials = ismember(behdata.block_type, {'respond not 3'});
+    
+    pressed_trials = ismember(behdata.cue_hit, {'True'}) | ismember(behdata.cue_false_alarm, {'True'});
+    unpressed_trials = ones(size(pressed_trials)) - pressed_trials;
 
+    hit_trials = ismember(behdata.cue_hit, {'True'});
+    false_alarm_trials = ismember(behdata.cue_false_alarm, {'True'});
+    miss_trials = (respond_trials & behdata.capture_colour_id == 3 & unpressed_trials) | (not_respond_trials & behdata.capture_colour_id ~= 3 & unpressed_trials);
+    correct_rejection_trials = (respond_trials & behdata.capture_colour_id ~= 3 & unpressed_trials) | (not_respond_trials & behdata.capture_colour_id == 3 & unpressed_trials);
+    
     congruent_trials = ismember(behdata.trial_condition, {'congruent'});
     incongruent_trials = ismember(behdata.trial_condition, {'incongruent'});
+    neutral_trials = ismember(behdata.trial_condition, {'neutral'});
 
     left_target_trials = ismember(behdata.target_bar, {'left'});
     right_target_trials = ismember(behdata.target_bar, {'right'});
+    
+    %% save hit/miss/false_alarm/correct_rejection
+    % hits, misses, false_alarms, correct_rejections
+    scores(p,1) = sum(behdata.cue_hit == "True");
+    scores(p,2) = sum(miss_trials);
+    scores(p,3) = sum(behdata.cue_false_alarm == "True");
+    scores(p,4) = sum(correct_rejection_trials);
+    scores(p,5) = sum(scores(p,1:4));
+
 
     %% mixture models of target error
-    % get non-target orientations
-    non_target_orientations = zeros(size(behdata.trial_number));
-    right_target_trials = find(strcmp(behdata.target_bar,'right'));
-    left_target_trials = find(strcmp(behdata.target_bar,'left'));
-    non_target_orientations(right_target_trials) = behdata.left_orientation(right_target_trials);
-    non_target_orientations(left_target_trials) = behdata.right_orientation(left_target_trials);
-    
-    % turn all orientations to radians...
-    non_target_orientations = (non_target_orientations/90*pi);
-    behdata.report_orientation = behdata.report_orientation/90*pi;
-    behdata.target_orientation = behdata.target_orientation/90*pi;
-    
-    % create model for each condition
-    cond_labels = ["loc_probe", "col_probe"];
-    conditions = [1 : size(cond_labels, 2)];
-    condition_sets = [colour_cue_trials&location_probe_trials, colour_cue_trials&colour_probe_trials];
+    % todo for later
 
-    for condition = conditions
-        [B, LL] = mixtureFit(behdata.report_orientation(condition_sets(:,condition)&congruent_trials&oktrials), ...
-            behdata.target_orientation(condition_sets(:,condition)&congruent_trials&oktrials),...
-            non_target_orientations(condition_sets(:,condition)&congruent_trials&oktrials));
-        
-        precision_c(p, condition) = B(1);
-        pT_c(p, condition) = B(2);
-        pNT_c(p, condition) = B(3);
-        pU_c(p, condition) = B(4);
-    end
-
-    for condition = conditions
-        [B, LL] = mixtureFit(behdata.report_orientation(condition_sets(:,condition)&incongruent_trials&oktrials), ...
-            behdata.target_orientation(condition_sets(:,condition)&incongruent_trials&oktrials),...
-            non_target_orientations(condition_sets(:,condition)&incongruent_trials&oktrials));
-        
-        precision_i(p, condition) = B(1);
-        pT_i(p, condition) = B(2);
-        pNT_i(p, condition) = B(3);
-        pU_i(p, condition) = B(4);
-    end
-    
     %% extract data of interest
     overall_dt(p,1) = mean(behdata.idle_reaction_time_in_ms(oktrials));
     overall_error(p,1) = mean(behdata.absolute_difference(oktrials));
-
-    loc_probe_decisiontime(p,1) = mean(behdata.idle_reaction_time_in_ms(congruent_trials&location_cue_trials&location_probe_trials&oktrials));
-    loc_probe_decisiontime(p,2) = mean(behdata.idle_reaction_time_in_ms(incongruent_trials&location_cue_trials&location_probe_trials&oktrials));
-    loc_probe_decisiontime(p,3) = mean(behdata.idle_reaction_time_in_ms(congruent_trials&colour_cue_trials&location_probe_trials&oktrials));
-    loc_probe_decisiontime(p,4) = mean(behdata.idle_reaction_time_in_ms(incongruent_trials&colour_cue_trials&location_probe_trials&oktrials));
-    loc_probe_decisiontime(p,5) = mean(behdata.idle_reaction_time_in_ms(location_probe_trials&oktrials));
-
-    loc_probe_error(p,1) = mean(behdata.absolute_difference(congruent_trials&location_cue_trials&location_probe_trials&oktrials));
-    loc_probe_error(p,2) = mean(behdata.absolute_difference(incongruent_trials&location_cue_trials&location_probe_trials&oktrials));
-    loc_probe_error(p,3) = mean(behdata.absolute_difference(congruent_trials&colour_cue_trials&location_probe_trials&oktrials));
-    loc_probe_error(p,4) = mean(behdata.absolute_difference(incongruent_trials&colour_cue_trials&location_probe_trials&oktrials));
-    loc_probe_error(p,5) = mean(behdata.absolute_difference(location_probe_trials&oktrials));
-
-    col_probe_decisiontime(p,1) = mean(behdata.idle_reaction_time_in_ms(congruent_trials&location_cue_trials&colour_probe_trials&oktrials));
-    col_probe_decisiontime(p,2) = mean(behdata.idle_reaction_time_in_ms(incongruent_trials&location_cue_trials&colour_probe_trials&oktrials));
-    col_probe_decisiontime(p,3) = mean(behdata.idle_reaction_time_in_ms(congruent_trials&colour_cue_trials&colour_probe_trials&oktrials));
-    col_probe_decisiontime(p,4) = mean(behdata.idle_reaction_time_in_ms(incongruent_trials&colour_cue_trials&colour_probe_trials&oktrials));
-    col_probe_decisiontime(p,5) = mean(behdata.idle_reaction_time_in_ms(location_probe_trials&oktrials));
-
-    col_probe_error(p,1) = mean(behdata.absolute_difference(congruent_trials&location_cue_trials&colour_probe_trials&oktrials));
-    col_probe_error(p,2) = mean(behdata.absolute_difference(incongruent_trials&location_cue_trials&colour_probe_trials&oktrials));
-    col_probe_error(p,3) = mean(behdata.absolute_difference(congruent_trials&colour_cue_trials&colour_probe_trials&oktrials));
-    col_probe_error(p,4) = mean(behdata.absolute_difference(incongruent_trials&colour_cue_trials&colour_probe_trials&oktrials));
-    col_probe_error(p,5) = mean(behdata.absolute_difference(location_probe_trials&oktrials));
-
-    congruency_labels = {"congruent", "incongruent"};
+    
+    congruency_labels = {"congruent", "incongruent", "neutral"};
 
     congruency_dt(p,1) = mean(behdata.idle_reaction_time_in_ms(congruent_trials&oktrials));
     congruency_dt(p,2) = mean(behdata.idle_reaction_time_in_ms(incongruent_trials&oktrials));
+    congruency_dt(p,3) = mean(behdata.idle_reaction_time_in_ms(neutral_trials&oktrials));
 
     congruency_er(p,1) = mean(behdata.absolute_difference(congruent_trials&oktrials));
     congruency_er(p,2) = mean(behdata.absolute_difference(incongruent_trials&oktrials));
+    congruency_er(p,3) = mean(behdata.absolute_difference(neutral_trials&oktrials));
 
+    pressed_labels = {"pressed", "unpressed"};
+      
+    pressed_dt(p,1) = mean(behdata.idle_reaction_time_in_ms(pressed_trials&oktrials));
+    pressed_dt(p,2) = mean(behdata.idle_reaction_time_in_ms(unpressed_trials&oktrials));
+   
+    pressed_congruency_dt(p,1) = mean(behdata.idle_reaction_time_in_ms(pressed_trials&oktrials&congruent_trials));
+    pressed_congruency_dt(p,2) = mean(behdata.idle_reaction_time_in_ms(pressed_trials&oktrials&incongruent_trials));
+    pressed_congruency_dt(p,3) = mean(behdata.idle_reaction_time_in_ms(unpressed_trials&oktrials&congruent_trials));
+    pressed_congruency_dt(p,4) = mean(behdata.idle_reaction_time_in_ms(unpressed_trials&oktrials&incongruent_trials));
     
+    pressed_er(p,1) = mean(behdata.absolute_difference(pressed_trials&oktrials));
+    pressed_er(p,2) = mean(behdata.absolute_difference(unpressed_trials&oktrials));
+   
+    pressed_congruency_er(p,1) = mean(behdata.absolute_difference(pressed_trials&oktrials&congruent_trials));
+    pressed_congruency_er(p,2) = mean(behdata.absolute_difference(pressed_trials&oktrials&incongruent_trials));
+    pressed_congruency_er(p,3) = mean(behdata.absolute_difference(unpressed_trials&oktrials&congruent_trials));
+    pressed_congruency_er(p,4) = mean(behdata.absolute_difference(unpressed_trials&oktrials&incongruent_trials));
+    
+    cue_response_labels = {"hit", "miss", "false alarm", "correct rejection"};
+
+    cue_response_dt(p,1) = mean(behdata.idle_reaction_time_in_ms(hit_trials&oktrials), "omitnan");
+    cue_response_dt(p,2) = mean(behdata.idle_reaction_time_in_ms(miss_trials&oktrials), "omitnan");
+    cue_response_dt(p,3) = mean(behdata.idle_reaction_time_in_ms(false_alarm_trials&oktrials), "omitnan");
+    cue_response_dt(p,4) = mean(behdata.idle_reaction_time_in_ms(correct_rejection_trials&oktrials), "omitnan");
+    
+    cue_response_er(p,1) = mean(behdata.absolute_difference(hit_trials&oktrials), "omitnan");
+    cue_response_er(p,2) = mean(behdata.absolute_difference(miss_trials&oktrials), "omitnan");
+    cue_response_er(p,3) = mean(behdata.absolute_difference(false_alarm_trials&oktrials), "omitnan");
+    cue_response_er(p,4) = mean(behdata.absolute_difference(correct_rejection_trials&oktrials), "omitnan");
+    
+    block_labels = {"respond_3", "respond_not_3"};
+
+    block_dt(p,1) = mean(behdata.idle_reaction_time_in_ms(respond_trials&oktrials));
+    block_dt(p,2) = mean(behdata.idle_reaction_time_in_ms(not_respond_trials&oktrials));
+    
+    block_congruency_dt(p,1) = mean(behdata.idle_reaction_time_in_ms(respond_trials&oktrials&congruent_trials));
+    block_congruency_dt(p,2) = mean(behdata.idle_reaction_time_in_ms(respond_trials&oktrials&incongruent_trials));
+    block_congruency_dt(p,3) = mean(behdata.idle_reaction_time_in_ms(not_respond_trials&oktrials&congruent_trials));
+    block_congruency_dt(p,4) = mean(behdata.idle_reaction_time_in_ms(not_respond_trials&oktrials&incongruent_trials));
+
+    block_er(p,1) = mean(behdata.absolute_difference(respond_trials&oktrials));
+    block_er(p,2) = mean(behdata.absolute_difference(not_respond_trials&oktrials));
+    
+    block_congruency_er(p,1) = mean(behdata.absolute_difference(respond_trials&oktrials&congruent_trials));
+    block_congruency_er(p,2) = mean(behdata.absolute_difference(respond_trials&oktrials&incongruent_trials));
+    block_congruency_er(p,3) = mean(behdata.absolute_difference(not_respond_trials&oktrials&congruent_trials));
+    block_congruency_er(p,4) = mean(behdata.absolute_difference(not_respond_trials&oktrials&incongruent_trials));
+
     %% calculate aggregates of interest
-    probe_labels = {"location probe", "colour probe", "location probe", "colour probe"};
-    cue_labels = {"location cue", "colour cue"};
+   pressed_dt_effect(p,1) = pressed_congruency_dt(p,2) - pressed_congruency_dt(p,1);
+   pressed_dt_effect(p,2) = pressed_congruency_dt(p,4) - pressed_congruency_dt(p,3);
+    
+   pressed_er_effect(p,1) = pressed_congruency_er(p,2) - pressed_congruency_er(p,1);
+   pressed_er_effect(p,2) = pressed_congruency_er(p,4) - pressed_congruency_er(p,3);
 
-    % order here is:
-    % 1: colour cue (location probe) -> TI
-    % 2: colour cue (colour probe) -> TR
+   block_dt_effect(p,1) = block_congruency_dt(p,2) - block_congruency_dt(p,1);
+   block_dt_effect(p,2) = block_congruency_dt(p,4) - block_congruency_dt(p,3);
 
-    congruency_dt_effect(p,1) = loc_probe_decisiontime(p,4) - loc_probe_decisiontime(p,3);
-    congruency_dt_effect(p,2) = col_probe_decisiontime(p,4) - col_probe_decisiontime(p,3);
-
-    congruency_er_effect(p,1) = loc_probe_error(p,4) - loc_probe_error(p,3);
-    congruency_er_effect(p,2) = col_probe_error(p,4) - col_probe_error(p,3);
-
+   block_er_effect(p,1) = block_congruency_er(p,2) - block_congruency_er(p,1);
+   block_er_effect(p,2) = block_congruency_er(p,4) - block_congruency_er(p,3);
 
     %% plot individuals
-    dt_lim = 1200;
-    er_lim = 30;
-
-    if plot_individuals
-        figure(figure_nr);
-        figure_nr = figure_nr+1;
-        subplot(subplot_size,subplot_size,p);
-        bar([1,2], [loc_probe_decisiontime(p,1:2); loc_probe_decisiontime(p,3:4)]); 
-        xticks([1,2]);
-        xticklabels(labels);
-        ylim([0 dt_lim]);
-        legend("congruent", "incongruent");
-        title(['decision time, location probe - pp ', num2str(pp)]);
-
-        figure(figure_nr);
-        figure_nr = figure_nr+1;
-        subplot(subplot_size,subplot_size,p);
-        bar([1,2], [loc_probe_error(p,1:2); loc_probe_error(p,3:4)]);
-        xticks([1,2]);
-        xticklabels(labels);
-        ylim([0 er_lim]);
-        legend("congruent", "incongruent");
-        title(['error, location probe - pp ', num2str(pp)]);
-
-        figure(figure_nr);
-        figure_nr = figure_nr+1;
-        subplot(subplot_size,subplot_size,p);
-        bar([1,2], [col_probe_decisiontime(p,1:2); col_probe_decisiontime(p,3:4)]);
-        xticks([1,2]);
-        xticklabels(labels);
-        ylim([0 dt_lim]);
-        legend("congruent", "incongruent");
-        title(['decision time, colour probe - pp ', num2str(pp)]);
-
-        figure(figure_nr);
-        figure_nr = figure_nr+1;
-        subplot(subplot_size,subplot_size,p);
-        bar([1,2], [col_probe_error(p,1:2); col_probe_error(p,3:4)]);
-        xticks([1,2]);
-        xticklabels(labels);
-        ylim([0 er_lim]);
-        legend("congruent", "incongruent");
-        title(['error, colour probe - pp ', num2str(pp)]);
-
-        figure(figure_nr);
-        figure_nr = figure_nr+1;
-        subplot(subplot_size,subplot_size,p);
-        bar([1,2], [congruency_dt_effect(p,1); congruency_dt_effect(p,2)]);
-        xticks([1,2]);
-        xticklabels(probe_labels);
-        ylim([0 200]);
-        legend("location probe", "colour probe");
-        title(['decision time effect - pp ', num2str(pp)]);
-
-        figure(figure_nr);
-        figure_nr = figure_nr+1;
-        subplot(subplot_size,subplot_size,p);
-        bar([1,2], [congruency_er_effect(p,1); congruency_er_effect(p,2)]);
-        xticks([1,2]);
-        xticklabels(probe_labels);
-        ylim([0 10]);
-        legend("location probe", "colour probe");
-        title(['error effect - pp ', num2str(pp)]);
-
-    end
+    % to do maybe later
 end
 
-    pT_effect = pT_c - pT_i;
-    pNT_effect = pNT_c - pNT_i;
-    pU_effect = pU_c - pU_i;
-    precision_effect = precision_c - precision_i;
-    
-    writematrix(congruency_er, [param.path, '\saved_data\beh_congruency_er']);
-    writematrix(congruency_dt, [param.path, '\saved_data\beh_congruency_dt']);
-    writematrix(congruency_er_effect, [param.path, '\saved_data\beh_congruency_er_effect']);
-    writematrix(congruency_dt_effect, [param.path, '\saved_data\beh_congruency_dt_effect']);
-
-%% calculate % change
-pp_dt_avg = overall_dt;
-pp_er_avg = overall_error;
-
-norm_dt_loc_con = (loc_probe_decisiontime(:,3) - pp_dt_avg) ./ pp_dt_avg * 100;
-norm_dt_loc_incon = (loc_probe_decisiontime(:,4) - pp_dt_avg) ./ pp_dt_avg * 100;
-norm_dt_col_con = (col_probe_decisiontime(:,3) - pp_dt_avg) ./ pp_dt_avg * 100;
-norm_dt_col_incon = (col_probe_decisiontime(:,4) - pp_dt_avg) ./ pp_dt_avg * 100;
-
-dt_effect_norm(:,1) = norm_dt_loc_incon - norm_dt_loc_con;
-dt_effect_norm(:,2) = norm_dt_col_incon - norm_dt_col_con;
-
-norm_er_loc_con = (loc_probe_error(:,3) - pp_er_avg) ./ pp_er_avg * 100;
-norm_er_loc_incon = (loc_probe_error(:,4) - pp_er_avg) ./ pp_er_avg * 100;
-norm_er_col_con = (col_probe_error(:,3) - pp_er_avg) ./ pp_er_avg * 100;
-norm_er_col_incon = (col_probe_error(:,4) - pp_er_avg) ./ pp_er_avg * 100;
-
-er_effect_norm(:,1) = norm_er_loc_incon - norm_er_loc_con;
-er_effect_norm(:,2) = norm_er_col_incon - norm_er_col_con;
-
-comb_norm_effect(:,1) = mean([dt_effect_norm(:,1), er_effect_norm(:,1)], 2);
-comb_norm_effect(:,2) = mean([dt_effect_norm(:,2), er_effect_norm(:,2)], 2);
-
-figure;
-subplot(1,3,1)
-hold on
-bar([1,2], mean(dt_effect_norm))
-plot([dt_effect_norm(:,1), dt_effect_norm(:,2)]')
-ylim([-25 50]);
-title("dt");
-
-subplot(1,3,2)
-hold on
-bar([1,2], mean(er_effect_norm))
-plot([er_effect_norm(:,1), er_effect_norm(:,2)]')
-ylim([-25 50]);
-title("error");
-
-subplot(1,3,3)
-hold on
-bar([1,2], mean(comb_norm_effect))
-plot([comb_norm_effect(:,1), comb_norm_effect(:,2)]')
-ylim([-25 50]);
-title("comb");
+%% mixture modelling result accumulation
+%todo
 
 %% plot mixture moduling results
-figure;
-subplot(2,2,1);
-hold on
-bar([1,2,3,4], [mean(pT_c(:,1)), mean(pT_i(:,1)), mean(pT_c(:,2)), mean(pT_i(:,2))])
-plot([1,2], [pT_c(:,1), pT_i(:,1)]')
-plot([3,4], [pT_c(:,2), pT_i(:,2)]')
-xticks([1,2,3,4])
-xticklabels({"con_loc", "incon_loc", "con_col", "incon_col"})
-title("pT")
+%todo
 
-subplot(2,2,2);
-hold on
-bar([1,2,3,4], [mean(pNT_c(:,1)), mean(pNT_i(:,1)), mean(pNT_c(:,2)), mean(pNT_i(:,2))])
-plot([1,2], [pNT_c(:,1), pNT_i(:,1)]')
-plot([3,4], [pNT_c(:,2), pNT_i(:,2)]')
-xticks([1,2,3,4])
-xticklabels({"con_loc", "incon_loc", "con_col", "incon_col"})
-title("pNT")
-
-subplot(2,2,3);
-hold on
-bar([1,2,3,4], [mean(pU_c(:,1)), mean(pU_i(:,1)), mean(pU_c(:,2)), mean(pU_i(:,2))])
-plot([1,2], [pU_c(:,1), pU_i(:,1)]')
-plot([3,4], [pU_c(:,2), pU_i(:,2)]')
-xticks([1,2,3,4])
-xticklabels({"con_loc", "incon_loc", "con_col", "incon_col"})
-title("pU")
-
-subplot(2,2,4);
-hold on
-bar([1,2,3,4], [mean(precision_c(:,1)), mean(precision_i(:,1)), mean(precision_c(:,2)), mean(precision_i(:,2))])
-plot([1,2], [precision_c(:,1), precision_i(:,1)]')
-plot([3,4], [precision_c(:,2), precision_i(:,2)]')
-xticks([1,2,3,4])
-xticklabels({"con_loc", "incon_loc", "con_col", "incon_col"})
-title("precision")
-
-
-    %% all pp plot
+%% all pp plot
 if plot_averages
-
     figure; 
     subplot(3,1,1);
     bar(ppnum, overall_dt(:,1));
@@ -366,103 +218,184 @@ if plot_averages
     figure;
     hold on 
     b = bar(mean(congruency_dt), 'FaceColor', colours(3,:), 'LineStyle', 'none');
-    errorbar([1:2], mean(congruency_dt), std(congruency_dt) ./ sqrt(p), 'LineStyle', 'none', 'Color', dark_colours(3,:), 'LineWidth', 1.5)
-    xticks([1 2]);
+    errorbar([1:3], mean(congruency_dt), std(congruency_dt) ./ sqrt(p), 'LineStyle', 'none', 'Color', dark_colours(3,:), 'LineWidth', 1.5)
+    xticks([1,2,3]);
     xticklabels(congruency_labels);
     title(['dt as function of congruency']);
     % add individuals
-    plot([1:2], congruency_dt, 'Color', [0, 0, 0, 0.25]);
-    ylim([300, 1200])
-
+    plot([1:3], congruency_dt, 'Color', [0, 0, 0, 0.25]);
+    
     % error
     figure;
     hold on 
     b = bar(mean(congruency_er), 'FaceColor', colours(3,:), 'LineStyle', 'none');
-    errorbar([1:2], mean(congruency_er), std(congruency_er) ./ sqrt(p), 'LineStyle', 'none', 'Color', dark_colours(3,:), 'LineWidth', 1.5)
-    xticks([1 2]);
+    errorbar([1:3], mean(congruency_er), std(congruency_er) ./ sqrt(p), 'LineStyle', 'none', 'Color', dark_colours(3,:), 'LineWidth', 1.5)
+    xticks([1,2,3]);
     xticklabels(congruency_labels);
     title(['error as function of congruency']);
     % add individuals
-    plot([1:2], congruency_er, 'Color', [0, 0, 0, 0.25]);
-    ylim([8, 31])
-   
-    %% main behavioural figure - dt
-    figure; 
-    hold on
-    b = bar([1,2], [mean(congruency_dt_effect(:,1)); mean(congruency_dt_effect(:,2))], 'LineStyle', 'none');
-    % add errorbars
-    dark_colours_for_loop = [dark_colours(1:2,:); dark_colours(1:2,:)];
-    errorbar([1,2], mean(congruency_dt_effect(:,1:2)), std(congruency_dt_effect(:,1:2)) ./ sqrt(p), "black", 'Color', dark_colours(1,:), 'LineWidth', 1.5);
-   
-    % add individuals
-    plot([1:2], [congruency_dt_effect(:,1:2)]', 'Color', [0, 0, 0, 0.25]);
-    xticks([1,2]);
-    xticklabels(probe_labels);
-    ylim([-65 185]);
-    title(['decision time effect - averaged']);
+    plot([1:3], congruency_er, 'Color', [0, 0, 0, 0.25]);
     
-    %% main behavioural figure - error
-    figure; 
+    %% effect of pressing
+    % pressed or not
+    % dt
+    figure;
     hold on
-    b = bar([1,2], [mean(congruency_er_effect(:,[1])); mean(congruency_er_effect(:,[2]))], 'LineStyle', 'none');
-    % add errorbars
-    errorbar([1,2], mean(congruency_er_effect(:,1:2)), std(congruency_er_effect(:,1:2)) ./ sqrt(p), "black", 'Color', dark_colours(1,:), 'LineWidth', 1.5);
+    b = bar(mean(pressed_dt));
+    errorbar([1:2], mean(pressed_dt), std(pressed_dt) ./ sqrt(p))
+    xticks([1,2]);
+    xticklabels(pressed_labels);
+    title(['decision time as function of pressing']);
+    % add individuals
+    plot([1:2], pressed_dt);
 
-    % add individuals
-    plot([1:2], [congruency_er_effect(:,[1,2])]', 'Color', [0, 0, 0, 0.25]);
-    % highlight excluded participants (only works if included at the top)
-    % plot([x(1),x(2)], [congruency_er_effect(9,1:2)]', 'Color', [1, 0, 0, 0.25]);
-    % plot([x(3),x(4)], [congruency_er_effect(9,3:4)]', 'Color', [1, 0, 0, 0.25]);
-    % plot([x(1),x(2)], [congruency_er_effect(17,1:2)]', 'Color', [0, 0, 1, 0.25]);
-    % plot([x(3),x(4)], [congruency_er_effect(17,3:4)]', 'Color', [0, 0, 1, 0.25]);
+    % er
+    figure;
+    hold on
+    b = bar(mean(pressed_er));
+    errorbar([1:2], mean(pressed_er), std(pressed_er) ./ sqrt(p))
     xticks([1,2]);
-    xticklabels(probe_labels);
-    ylim([-3.5 6.5]);
-    legend("location probe", "colour probe");
-    title(['error effect - averaged']);
-    
+    xticklabels(pressed_labels);
+    title(['error as function of pressing']);
+    % add individuals
+    plot([1:2], pressed_er);
+
+    % pressed or not x should have pressed or not
+    % dt
+    figure;
+    hold on
+    b = bar(mean(cue_response_dt, "omitnan"));
+    errorbar([1:4], mean(cue_response_dt, "omitnan"), std(cue_response_dt, "omitmissing") ./ sqrt(p))
+    xticks([1:4]);
+    xticklabels(cue_response_labels);
+    title(['decision time as function of pressing x should have pressed']);
+    % add individuals
+    plot([1:4], cue_response_dt);
+
+    % er
+    figure;
+    hold on
+    b = bar(mean(cue_response_er, "omitnan"));
+    errorbar([1:4], mean(cue_response_er, "omitnan"), std(cue_response_er, "omitmissing") ./ sqrt(p))
+    xticks([1:4]);
+    xticklabels(cue_response_labels);
+    title(['error as function of pressing x should have pressed']);
+    % add individuals
+    plot([1:4], cue_response_er);
+
+    %% congruency effect x pressing
+    % dt
+    figure; 
+    hold on
+    b = bar(mean(pressed_dt_effect));
+    errorbar([1:2], mean(pressed_dt_effect), std(pressed_dt_effect) ./ sqrt(p))
+    xticks([1:2]);
+    xticklabels(pressed_labels);
+    title(['congruency effect (dt) as function of press'])
+    % add individuals
+    plot([1:2], pressed_dt_effect);
+
+    % er
+    figure; 
+    hold on
+    b = bar(mean(pressed_er_effect));
+    errorbar([1:2], mean(pressed_er_effect), std(pressed_er_effect) ./ sqrt(p))
+    xticks([1:2]);
+    xticklabels(pressed_labels);
+    title(['congruency effect (er) as function of press'])
+    % add individuals
+    plot([1:2], pressed_er_effect);
+
+    %% effect of block type
+    % respond_3 vs. respond_not_3
+    % dt
+    figure;
+    hold on
+    b = bar(mean(block_dt));
+    errorbar([1:2], mean(block_dt), std(block_dt) ./ sqrt(p))
+    xticks([1,2]);
+    xticklabels(block_labels);
+    title(['decision time as function of block type']);
+    % add individuals
+    plot([1:2], block_dt);
+
+    % er
+    figure;
+    hold on
+    b = bar(mean(block_er));
+    errorbar([1:2], mean(block_er), std(block_er) ./ sqrt(p))
+    xticks([1,2]);
+    xticklabels(block_labels);
+    title(['error as function of block type']);
+    % add individuals
+    plot([1:2], block_er);
+
+    %% congruency effect x block type
+    % dt
+    figure; 
+    hold on
+    b = bar(mean(block_dt_effect));
+    errorbar([1:2], mean(block_dt_effect), std(block_dt_effect) ./ sqrt(p))
+    xticks([1:2]);
+    xticklabels(block_labels);
+    title(['congruency effect (dt) as function of block type'])
+    % add individuals
+    plot([1:2], block_dt_effect);
+
+    % er
+    figure; 
+    hold on
+    b = bar(mean(block_er_effect));
+    errorbar([1:2], mean(block_er_effect), std(block_er_effect) ./ sqrt(p))
+    xticks([1:2]);
+    xticklabels(block_labels);
+    title(['congruency effect (er) as function of block type'])
+    % add individuals
+    plot([1:2], block_er_effect);
+
+   
     %% main behavioural figure - pT
-    figure; 
-    hold on
-    b = bar([1,2], [mean(pT_effect(:,1)); mean(pT_effect(:,2))], 'LineStyle', 'none');
-    % add errorbars
-    errorbar([1:2], mean(pT_effect(:,1:2)), std(pT_effect(:,1:2)) ./ sqrt(p), "black", 'Color', dark_colours(1,:), 'LineWidth', 1.5);
-
-    % add individuals
-    plot([1:2], [pT_effect(:,1:2)]', 'Color', [0, 0, 0, 0.25]);
-    % highlight excluded participants (only works if included at the top)
-    % plot([x(1),x(2)], [congruency_er_effect(9,1:2)]', 'Color', [1, 0, 0, 0.25]);
-    % plot([x(3),x(4)], [congruency_er_effect(9,3:4)]', 'Color', [1, 0, 0, 0.25]);
-    % plot([x(1),x(2)], [congruency_er_effect(17,1:2)]', 'Color', [0, 0, 1, 0.25]);
-    % plot([x(3),x(4)], [congruency_er_effect(17,3:4)]', 'Color', [0, 0, 1, 0.25]);
-    xticks([1,2]);
-    xticklabels(probe_labels);
-    % ylim([-3.5 6.5]);
-    legend("location probe", "colour probe");
-    title(['pT effect - averaged']);
-
-    % set(gcf,'position',[0,0, 700,1080])
+    % figure; 
+    % hold on
+    % b = bar([1,2], [mean(pT_effect(:,1)); mean(pT_effect(:,2))], 'LineStyle', 'none');
+    % % add errorbars
+    % errorbar([1:2], mean(pT_effect(:,1:2)), std(pT_effect(:,1:2)) ./ sqrt(p), "black", 'Color', dark_colours(1,:), 'LineWidth', 1.5);
+    % 
+    % % add individuals
+    % plot([1:2], [pT_effect(:,1:2)]', 'Color', [0, 0, 0, 0.25]);
+    % % highlight excluded participants (only works if included at the top)
+    % % plot([x(1),x(2)], [congruency_er_effect(9,1:2)]', 'Color', [1, 0, 0, 0.25]);
+    % % plot([x(3),x(4)], [congruency_er_effect(9,3:4)]', 'Color', [1, 0, 0, 0.25]);
+    % % plot([x(1),x(2)], [congruency_er_effect(17,1:2)]', 'Color', [0, 0, 1, 0.25]);
+    % % plot([x(3),x(4)], [congruency_er_effect(17,3:4)]', 'Color', [0, 0, 1, 0.25]);
+    % xticks([1,2]);
+    % xticklabels(probe_labels);
+    % % ylim([-3.5 6.5]);
+    % legend("location probe", "colour probe");
+    % title(['pT effect - averaged']);
+    % 
+    % % set(gcf,'position',[0,0, 700,1080])
 
      %% main behavioural figure - pNT
-    figure; 
-    hold on
-    b = bar([1,2], [mean(pNT_effect(:,1)); mean(pNT_effect(:,2))], 'LineStyle', 'none');
-    % add errorbars
-    errorbar([1,2], mean(pNT_effect(:,1:2)), std(pNT_effect(:,1:2)) ./ sqrt(p), "black", 'Color', dark_colours(1,:), 'LineWidth', 1.5);
-    % add individuals
-    plot([1:2], [pNT_effect(:,1:2)]', 'Color', [0, 0, 0, 0.25]);
-    % highlight excluded participants (only works if included at the top)
-    % plot([x(1),x(2)], [congruency_er_effect(9,1:2)]', 'Color', [1, 0, 0, 0.25]);
-    % plot([x(3),x(4)], [congruency_er_effect(9,3:4)]', 'Color', [1, 0, 0, 0.25]);
-    % plot([x(1),x(2)], [congruency_er_effect(17,1:2)]', 'Color', [0, 0, 1, 0.25]);
-    % plot([x(3),x(4)], [congruency_er_effect(17,3:4)]', 'Color', [0, 0, 1, 0.25]);
-    xticks([1,2]);
-    xticklabels(probe_labels);
-    % ylim([-3.5 6.5]);
-    legend("location cue", "colour cue");
-    title(['pNT effect - averaged']);
-
-    % set(gcf,'position',[0,0, 700,1080])
+    % figure; 
+    % hold on
+    % b = bar([1,2], [mean(pNT_effect(:,1)); mean(pNT_effect(:,2))], 'LineStyle', 'none');
+    % % add errorbars
+    % errorbar([1,2], mean(pNT_effect(:,1:2)), std(pNT_effect(:,1:2)) ./ sqrt(p), "black", 'Color', dark_colours(1,:), 'LineWidth', 1.5);
+    % % add individuals
+    % plot([1:2], [pNT_effect(:,1:2)]', 'Color', [0, 0, 0, 0.25]);
+    % % highlight excluded participants (only works if included at the top)
+    % % plot([x(1),x(2)], [congruency_er_effect(9,1:2)]', 'Color', [1, 0, 0, 0.25]);
+    % % plot([x(3),x(4)], [congruency_er_effect(9,3:4)]', 'Color', [1, 0, 0, 0.25]);
+    % % plot([x(1),x(2)], [congruency_er_effect(17,1:2)]', 'Color', [0, 0, 1, 0.25]);
+    % % plot([x(3),x(4)], [congruency_er_effect(17,3:4)]', 'Color', [0, 0, 1, 0.25]);
+    % xticks([1,2]);
+    % xticklabels(probe_labels);
+    % % ylim([-3.5 6.5]);
+    % legend("location cue", "colour cue");
+    % title(['pNT effect - averaged']);
+    % 
+    % % set(gcf,'position',[0,0, 700,1080])
      
 end
 

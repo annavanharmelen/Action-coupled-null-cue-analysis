@@ -8,7 +8,7 @@ display_percentageok = 1;
 plot_individuals = 0;
 plot_averages = 0;
 
-pp2do = [1:8]; 
+pp2do = [1:9,11:26]; 
 p = 0;
 
 [bar_size, colours, dark_colours, labels, subplot_size, percentageok] = setBehaviourParam(pp2do);
@@ -46,7 +46,7 @@ for pp = pp2do
         subplot(subplot_size,subplot_size,p);
         histogram(behdata.response_time_in_ms(oktrials),50);
         title(['response time - pp ', num2str(pp2do(p))]);
-        xlim([0 1500]);
+        xlim([0 2000]);
 
         figure(figure_nr);
         figure_nr = figure_nr+1;
@@ -103,21 +103,27 @@ for pp = pp2do
 
 
     %% mixture models of target error
-    % todo for later
+    non_target_orientations = behdata.left_orientation;
+    non_target_orientations(behdata.target_bar == "left") = behdata.right_orientation(behdata.target_bar == "left");
+    [con_B(p,:), ~, W] = mixtureFit(deg2rad(behdata.report_orientation(congruent_trials)), deg2rad(behdata.target_orientation(congruent_trials)), deg2rad(non_target_orientations(congruent_trials)));
+    [incon_B(p,:), ~, ~] = mixtureFit(deg2rad(behdata.report_orientation(incongruent_trials)), deg2rad(behdata.target_orientation(incongruent_trials)), deg2rad(non_target_orientations(incongruent_trials)));
+    [neu_B(p,:), ~, ~] = mixtureFit(deg2rad(behdata.report_orientation(neutral_trials)), deg2rad(behdata.target_orientation(neutral_trials)), deg2rad(non_target_orientations(neutral_trials)));
+
 
     %% extract data of interest
     overall_dt(p,1) = mean(behdata.idle_reaction_time_in_ms(oktrials));
     overall_error(p,1) = mean(behdata.absolute_difference(oktrials));
+    overall_perf(p,1) =  mean(behdata.performance(oktrials));
     
-    congruency_labels = {"congruent", "incongruent", "neutral"};
+    congruency_labels = {"match", "match", "match"};
 
     congruency_dt(p,1) = mean(behdata.idle_reaction_time_in_ms(congruent_trials&oktrials));
-    congruency_dt(p,2) = mean(behdata.idle_reaction_time_in_ms(incongruent_trials&oktrials));
-    congruency_dt(p,3) = mean(behdata.idle_reaction_time_in_ms(neutral_trials&oktrials));
+    congruency_dt(p,2) = mean(behdata.idle_reaction_time_in_ms(neutral_trials&oktrials));
+    congruency_dt(p,3) = mean(behdata.idle_reaction_time_in_ms(incongruent_trials&oktrials));
 
     congruency_er(p,1) = mean(behdata.absolute_difference(congruent_trials&oktrials));
-    congruency_er(p,2) = mean(behdata.absolute_difference(incongruent_trials&oktrials));
-    congruency_er(p,3) = mean(behdata.absolute_difference(neutral_trials&oktrials));
+    congruency_er(p,2) = mean(behdata.absolute_difference(neutral_trials&oktrials));
+    congruency_er(p,3) = mean(behdata.absolute_difference(incongruent_trials&oktrials));
 
     pressed_labels = {"pressed", "unpressed"};
       
@@ -181,31 +187,166 @@ for pp = pp2do
    block_er_effect(p,2) = block_congruency_er(p,4) - block_congruency_er(p,3);
 
     %% plot individuals
-    % to do maybe later
+    if plot_individuals
+        figure(figure_nr);
+        figure_nr = figure_nr+1;
+        subplot(5,5,p);
+        title(p);
+        b = bar(congruency_dt(p,:), 'FaceColor', 'flat', 'LineStyle', 'none');
+        b.CData(1,:) = get_colour("blue", "");
+        b.CData(2,:) = get_colour("green", "");
+        b.CData(3,:) = get_colour("red", "");
+    end
 end
 
-%% mixture modelling result accumulation
-%todo
-
+if plot_averages
 %% plot mixture moduling results
-%todo
+    figure;
+    tL = subplot(2,2,1);
+    hold on
+    b = bar([mean(con_B(:,1)), mean(neu_B(:,1)), mean(incon_B(:,1))], 'faceColor', 'flat', 'EdgeColor','none');
+    b.CData(1,:) = get_colour("blue", "");
+    b.CData(2,:) = get_colour("green", "");
+    b.CData(3,:) = get_colour("red", "");
+    errorbar(1, mean(con_B(:,1)), std(con_B(:,1)) ./ sqrt(size(pp2do,2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("blue", "dark"));
+    errorbar(2, mean(neu_B(:,1)), std(neu_B(:,1)) ./ sqrt(size(pp2do,2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("green", "dark"));
+    errorbar(3, mean(incon_B(:,1)), std(incon_B(:,1)) ./ sqrt(size(pp2do,2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("red", "dark"));
+    % add individuals
+    plot([1,2,3], [con_B(:,1), neu_B(:,1), incon_B(:,1)], 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
+    xlim([0.35 3.65]);
+    xticks([1,2,3]);
+    xticklabels(congruency_labels);
+    ylabel('Precision (K)');
+
+    tR = subplot(2,2,2);
+    hold on
+    b = bar([mean(con_B(:,2)), mean(neu_B(:,2)), mean(incon_B(:,2))], 'faceColor', 'flat', 'EdgeColor','none');
+    b.CData(1,:) = get_colour("blue", "");
+    b.CData(2,:) = get_colour("green", "");
+    b.CData(3,:) = get_colour("red", "");
+    errorbar(1, mean(con_B(:,2)), std(con_B(:,2)) ./ sqrt(size(pp2do,2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("blue", "dark"));
+    errorbar(2, mean(neu_B(:,2)), std(neu_B(:,2)) ./ sqrt(size(pp2do,2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("green", "dark"));
+    errorbar(3, mean(incon_B(:,2)), std(incon_B(:,2)) ./ sqrt(size(pp2do,2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("red", "dark"));
+    % add individuals
+    plot([1,2,3], [con_B(:,2), neu_B(:,2), incon_B(:,2)], 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
+    ylabel('P(target response)');
+    ylim([0.5 1]);
+    yticks([0.5, 0.75, 1]);
+    xlim([0.35 3.65]);
+    xticks([1,2,3]);
+    xticklabels(congruency_labels);
+
+    bL = subplot(2,2,3);
+    hold on
+    b = bar([mean(con_B(:,3)), mean(neu_B(:,3)), mean(incon_B(:,3))], 'faceColor', 'flat', 'EdgeColor','none');
+    b.CData(1,:) = get_colour("blue", "");
+    b.CData(2,:) = get_colour("green", "");
+    b.CData(3,:) = get_colour("red", "");
+    errorbar(1, mean(con_B(:,3)), std(con_B(:,3)) ./ sqrt(size(pp2do,2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("blue", "dark"));
+    errorbar(2, mean(neu_B(:,3)), std(neu_B(:,3)) ./ sqrt(size(pp2do,2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("green", "dark"));
+    errorbar(3, mean(incon_B(:,3)), std(incon_B(:,3)) ./ sqrt(size(pp2do,2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("red", "dark"));
+    % add individuals
+    plot([1,2,3], [con_B(:,3), neu_B(:,3), incon_B(:,3)], 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
+    ylabel('P(non-target response)');
+    xlim([0.35 3.65]);
+    xticks([1,2,3]);
+    xticklabels(congruency_labels);
+
+    bR = subplot(2,2,4);
+    hold on
+    b = bar([mean(con_B(:,4)), mean(neu_B(:,4)), mean(incon_B(:,4))], 'faceColor', 'flat', 'EdgeColor','none');
+    b.CData(1,:) = get_colour("blue", "");
+    b.CData(2,:) = get_colour("green", "");
+    b.CData(3,:) = get_colour("red", "");
+    errorbar(1, mean(con_B(:,4)), std(con_B(:,4)) ./ sqrt(size(pp2do,2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("blue", "dark"));
+    errorbar(2, mean(neu_B(:,4)), std(neu_B(:,4)) ./ sqrt(size(pp2do,2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("green", "dark"));
+    errorbar(3, mean(incon_B(:,4)), std(incon_B(:,4)) ./ sqrt(size(pp2do,2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("red", "dark"));
+    % add individuals
+    plot([1,2,3], [con_B(:,4), neu_B(:,4), incon_B(:,4)], 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
+    ylabel('P(uniform response)');
+    ylim([0 0.4]);
+    yticks([0, 0.2, 0.4]);
+    xlim([0.35 3.65]);
+    xticks([1,2,3]);
+    xticklabels(congruency_labels);
+
+    % general
+    set(gcf(), 'Position', [800 300 880 800]);
+
+    axes = {tL, tR, bL, bR};
+    for i = 1:size(axes,2)
+        set(axes{i}, 'Box', 'on');
+        set(axes{i}, 'FontSize', [24.8]);
+        set(axes{i}, 'FontName', 'Aptos');
+        set(axes{i}.XAxis, 'FontSize', 18);
+        set(axes{i}, 'LineWidth', 1.33);
+    end
+
+    tL.YLabel.Position = [-0.3717   10.3214   -1.0000];
+    bR.YLabel.Position = [-0.6498    0.2000   -1.0000];
+
+    tL.Position = [0.1469    0.5838    0.3177    0.3412];
+    bL.Position = [0.1469    0.1100    0.3177    0.3412];
+    tR.Position = [0.6530    0.5838    0.3177    0.3412];
+    bR.Position = [0.6530    0.1100    0.3177    0.3412];
+
+    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\behavioural_consequences_of_selection_mixture_modelling", "-dsvg")
+    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\behavioural_consequences_of_selection_mixture_modelling", "-dpng")
+     
+%% stats over previous figure (mixture modelling)
+    % some stats
+    n = size(pp2do,2);
+    K_tbl = table([1:n,1:n,1:n]', [con_B(:,1);neu_B(:,1);incon_B(:,1)],[ones(n,1);ones(n,1)*2;ones(n,1)*3], 'VariableNames', {'participant_id', 'precision', 'condition'});
+    pT_tbl = table([1:n,1:n,1:n]', [con_B(:,2);neu_B(:,2);incon_B(:,2)],[ones(n,1);ones(n,1)*2;ones(n,1)*3], 'VariableNames', {'participant_id', 'pT', 'condition'});
+    pNT_tbl = table([1:n,1:n,1:n]', [con_B(:,3);neu_B(:,3);incon_B(:,3)],[ones(n,1);ones(n,1)*2;ones(n,1)*3], 'VariableNames', {'participant_id', 'pNT', 'condition'});
+    pU_tbl = table([1:n,1:n,1:n]', [con_B(:,4);neu_B(:,4);incon_B(:,4)],[ones(n,1);ones(n,1)*2;ones(n,1)*3], 'VariableNames', {'participant_id', 'pU', 'condition'});
+
+    K_lme = fitlme(K_tbl,'precision ~ condition + (1|participant_id)')
+    anova(K_lme)
+    pT_lme = fitlme(pT_tbl,'pT ~ condition + (1|participant_id)')
+    anova(pT_lme)
+    pNT_lme = fitlme(pNT_tbl,'pNT ~ condition + (1|participant_id)')
+    anova(pNT_lme)
+    pU_lme = fitlme(pU_tbl,'pU ~ condition + (1|participant_id)')
+    anova(pU_lme)
+
+    %post-hoc pairwise comparison
+    mm_p_values = zeros(3,4)
+    [h,mm_p_values(1,1),ci,stats] = ttest(con_B(:,1), neu_B(:,1));
+    [h,mm_p_values(2,1),ci,stats] = ttest(neu_B(:,1), incon_B(:,1));
+    [h,mm_p_values(3,1),ci,stats] = ttest(con_B(:,1), incon_B(:,1));
+
+    [h,mm_p_values(1,2),ci,stats] = ttest(con_B(:,2), neu_B(:,2));
+    [h,mm_p_values(2,2),ci,stats] = ttest(neu_B(:,2), incon_B(:,2));
+    [h,mm_p_values(3,2),ci,stats] = ttest(con_B(:,2), incon_B(:,2));
+
+    [h,mm_p_values(1,3),ci,stats] = ttest(con_B(:,3), neu_B(:,3));
+    [h,mm_p_values(2,3),ci,stats] = ttest(neu_B(:,3), incon_B(:,3));
+    [h,mm_p_values(3,3),ci,stats] = ttest(con_B(:,3), incon_B(:,3));
+
+    [h,mm_p_values(1,4),ci,stats] = ttest(con_B(:,4), neu_B(:,4));
+    [h,mm_p_values(2,4),ci,stats] = ttest(neu_B(:,4), incon_B(:,4));
+    [h,mm_p_values(3,4),ci,stats] = ttest(con_B(:,4), incon_B(:,4));
 
 %% all pp plot
-if plot_averages
     figure; 
-    subplot(3,1,1);
+    subplot(4,1,1);
     bar(ppnum, overall_dt(:,1));
     title('overall decision time');
     ylim([0 900]);
     xlabel('pp #');
 
-    subplot(3,1,2);
+    subplot(4,1,2);
     bar(ppnum, overall_error(:,1));
     title('overall error');
-    ylim([0 25]);
     xlabel('pp #');
 
-    subplot(3,1,3);
+    subplot(4,1,3);
+    bar(ppnum, overall_perf(:,1));
+    title('overall performance');
+    xlabel('pp #');
+    
+    subplot(4,1,4);
     bar(ppnum, percentageok);
     title('percentage ok trials');
     ylim([90 100]);

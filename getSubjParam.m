@@ -3,7 +3,7 @@ function param = getSubjParam(pp)
 %% participant-specific notes
 
 %% set path and pp-specific file locations
-unique_numbers = [25, 44, 43, 24, 59, 13, 14, 63]; %needs to be in the right order
+unique_numbers = [25,44,43,24,59,13,14,63,37,21,62,64,42,71,35,89,61,97,26,78,91,47,70,94,88,46]; %needs to be in the right order
 
 param.path = '\\labsdfs.labs.vu.nl\labsdfs\FGB-ETP-CogPsy-ProactiveBrainLab\core_lab_members\Anna\Data\vidi5 - action-coupled-null-cue\';
 

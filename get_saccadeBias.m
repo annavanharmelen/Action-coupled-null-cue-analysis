@@ -32,16 +32,17 @@ for pp = setdiff(1:26,[2,18,24]);
 
     %% selection vectors for conditions -- this is where it starts to become interesting!
     % cued item location
-    targL = ismember(tl.trialinfo(:,1), [21,23,25,27,29,211,213,215,217,219]);
-    targR = ismember(tl.trialinfo(:,1), [22,24,26,28,210,212,214,216,218,220]);
+    targL = ismember(tl.trialinfo(:,1), [21,23,25,27,29,211,213,215,217,219,221,223]);
+    targR = ismember(tl.trialinfo(:,1), [22,24,26,28,210,212,214,216,218,220,222,224]);
     
-    congruent = ismember(tl.trialinfo(:,1), [21,22,25,26,211,212,215,216]);
-    incongruent = ismember(tl.trialinfo(:,1), [23,24,27,28,213,214,217,218]);
-    neutral = ismember(tl.trialinfo(:,1), [29,210,219,220]);
+    congruent = ismember(tl.trialinfo(:,1), [21,22,25,26,213,214,217,218]);
+    incongruent = ismember(tl.trialinfo(:,1), [23,24,27,28,215,216,219,220]);
+    neutral = ismember(tl.trialinfo(:,1), [29,210,211,212,221,222,223,224]);
+    neutral_3 = ismember(tl.trialinfo(:,1), [29,210,221,222]);
+    neutral_4 = ismember(tl.trialinfo(:,1), [211,212,223,224]);
 
-    captureL = ismember(tl.trialinfo(:,1), [21,24,25,28,211,214,215,218]);
-    captureR = ismember(tl.trialinfo(:,1), [22,23,26,27,212,213,216,217]);
-    captureN = ismember(tl.trialinfo(:,1), [29,210,219,220]);
+    captureL = ismember(tl.trialinfo(:,1), [21,24,25,28,213,216,217,220]);
+    captureR = ismember(tl.trialinfo(:,1), [22,23,26,27,214,215,218,219]);
 
     % responded or not
     behdata = readtable(param.log);
@@ -58,12 +59,12 @@ for pp = setdiff(1:26,[2,18,24]);
     end
 
     % should respond or not
-    should_respond = ismember(tl.trialinfo(:,1), [29,210, 211:218]);
-    should_not_respond = ismember(tl.trialinfo(:,1), [21:28, 219:220]);
+    should_respond = ismember(tl.trialinfo(:,1), [29,210,213:220,223,224]);
+    should_not_respond = ismember(tl.trialinfo(:,1), [21:28,211,212,221,222]);
 
     % block type
-    respond_neutral = ismember(tl.trialinfo(:,1), [21:29, 210]);
-    respond_not_neutral = ismember(tl.trialinfo(:,1), [211:220]);
+    respond_neutral = ismember(tl.trialinfo(:,1), [21:29, 210:212]);
+    respond_not_neutral = ismember(tl.trialinfo(:,1), [213:224]);
 
     % median-split on behaviour
     behdata = readtable(getSubjParam(pp).log);

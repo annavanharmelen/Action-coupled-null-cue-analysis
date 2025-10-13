@@ -7,7 +7,7 @@ clear; clc; close all;
 for pp      = setdiff(1:26,[2,18,24]);
 
 %% Set trig labels and epoch timings
-values2use  = [21:29,210:220]; % capture-cue onset
+values2use  = [21:29,210:224]; % capture-cue onset
 prestim     = -1.0; % 
 poststim    = 2.5; % until 3 s after
 

@@ -5,7 +5,7 @@
 clear; clc; close all;
     
 %% parameters
-pp2do           = [1:9,11:26];
+pp2do           = setdiff(1:26,[2,18,24]);
 oneOrTwoD       = 1;        oneOrTwoD_options = {'_1D','_2D'};
 nsmooth         = 200;
 plotSinglePps   = 0;

@@ -537,7 +537,133 @@ if plot_averages
     % title(['pNT effect - averaged']);
     % 
     % % set(gcf,'position',[0,0, 700,1080])
+
+    %% main figure for poster
+    % settings
+    w = [100 2.5];
+    xpos = [1 2];
+    xpos_offset = [1.1, 1.9];
+
+    % decision time
+    figure;
+    tL = subplot(2,2,1);
+    hold on 
+    b = bar(mean(congruency_dt), 'FaceColor','flat', 'LineStyle', 'none');
+    b.CData(1,:) = get_colour("blue", "");
+    b.CData(2,:) = get_colour("green", "");
+    b.CData(3,:) = get_colour("red", "");
+    errorbar(1, mean(congruency_dt(:,1)), std(congruency_dt(:,1)) ./ sqrt(p), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("blue", "dark"))
+    errorbar(2, mean(congruency_dt(:,2)), std(congruency_dt(:,2)) ./ sqrt(p), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("green", "dark"))
+    errorbar(3, mean(congruency_dt(:,3)), std(congruency_dt(:,3)) ./ sqrt(p), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("red", "dark"))
+    xticks([1,2,3]);
+    xlim([0.35 3.65]);
+    xticklabels(congruency_labels);
+    ylabel('Decision time (ms)');
+    yticks([0, 750, 1500]);
+    % add individuals
+    plot([1:3], congruency_dt, 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
+
+    % calculate kernel densities
+    [f_c, xi_c] = ksdensity(congruency_dt(:,1) - congruency_dt(:,2));
+    [m,c] = min(abs(xi_c - mean(congruency_dt(:,1)-congruency_dt(:,2))));
+    [f_i, xi_i] = ksdensity(congruency_dt(:,3) - congruency_dt(:,2));
+    [m,i] = min(abs(xi_i - mean(congruency_dt(:,3)-congruency_dt(:,2))));
+
+    tR = subplot(2,2,2);
+    hold on 
+    patch('XData', [f_c(:)*-w(1) + xpos(1), zeros(numel(xi_c(:)),1)],'yData', [xi_c(:),xi_c(:)],'FaceColor', get_colour("blue", ""), 'EdgeColor', 'none');
+    patch('XData', [f_i(:)*w(1) + xpos(2), zeros(numel(xi_i(:)),1)],'yData', [xi_i(:),xi_i(:)],'FaceColor', get_colour("red", ""), 'EdgeColor', 'none');
+    plot([xpos(1), xpos(1) + f_c(c)*-w(1)] , [mean(congruency_dt(:,1) - congruency_dt(:,2)), mean(congruency_dt(:,1) - congruency_dt(:,2))], 'Color', get_colour("blue", "dark"), 'LineWidth', 2);
+    plot([xpos(2), xpos(2) + f_i(i)*w(1)] , [mean(congruency_dt(:,3) - congruency_dt(:,2)), mean(congruency_dt(:,3) - congruency_dt(:,2))], 'Color', get_colour("red", "dark"), 'LineWidth', 2);
+    yline(0, 'LineWidth',1, 'LineStyle','--');
+    xlim([0.25 2.75]);
+    xticks([1 2]);
+    xticklabels(congruency_labels([1,3]));
+    yticks([-300, 0, 300]);
+    ylim([-450 450]);
+    % add individuals
+    plot(xpos_offset, [congruency_dt(:,1)-congruency_dt(:,2),congruency_dt(:,3)-congruency_dt(:,2)], 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
+    scatter(ones(25,1)*xpos_offset(1), congruency_dt(:,1)-congruency_dt(:,2), 20, get_colour("blue", ""), 'filled');
+    scatter(ones(25,1)*xpos_offset(2), congruency_dt(:,3)-congruency_dt(:,2), 20,  get_colour("red", ""), 'filled');
+    
+    
+    % error
+    bL = subplot(2,2,3);
+    hold on
+    b = bar(mean(congruency_er), 'FaceColor','flat','LineStyle', 'none');
+    b.CData(1,:) = get_colour("blue", "");
+    b.CData(2,:) = get_colour("green", "");
+    b.CData(3,:) = get_colour("red", "");
+    errorbar(1, mean(congruency_er(:,1)), std(congruency_er(:,1)) ./ sqrt(p), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("blue", "dark"))
+    errorbar(2, mean(congruency_er(:,2)), std(congruency_er(:,2)) ./ sqrt(p), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("green", "dark"))
+    errorbar(3, mean(congruency_er(:,3)), std(congruency_er(:,3)) ./ sqrt(p), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("red", "dark"))
+    xticks([1,2,3]);
+    xlim([0.35 3.65]);
+    xticklabels(congruency_labels);
+    ylabel('Reproduction error (°)');
+    % add individuals
+    plot([1:3], congruency_er, 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
+
+    % calculate kernel densities
+    [f_c, xi_c] = ksdensity(congruency_er(:,1) - congruency_er(:,2));
+    [m,c] = min(abs(xi_c - mean(congruency_er(:,1)-congruency_er(:,2))));
+    [f_i, xi_i] = ksdensity(congruency_er(:,3) - congruency_er(:,2));
+    [m,i] = min(abs(xi_i - mean(congruency_er(:,3)-congruency_er(:,2))));
+
+    bR = subplot(2,2,4);
+    hold on 
+    patch('XData', [f_c(:)*-w(2) + xpos(1), zeros(numel(xi_c(:)),1)],'yData', [xi_c(:),xi_c(:)],'FaceColor', get_colour("blue", ""), 'EdgeColor', 'none');
+    patch('XData', [f_i(:)*w(2) + xpos(2), zeros(numel(xi_i(:)),1)],'yData', [xi_i(:),xi_i(:)],'FaceColor', get_colour("red", ""), 'EdgeColor', 'none');
+    plot([xpos(1), xpos(1) + f_c(c)*-w(2)] , [mean(congruency_er(:,1) - congruency_er(:,2)), mean(congruency_er(:,1) - congruency_er(:,2))], 'Color', get_colour("blue", "dark"), 'LineWidth', 2);
+    plot([xpos(2), xpos(2) + f_i(i)*w(2)] , [mean(congruency_er(:,3) - congruency_er(:,2)), mean(congruency_er(:,3) - congruency_er(:,2))], 'Color', get_colour("red", "dark"), 'LineWidth', 2);
+    yline(0, 'LineWidth',1, 'LineStyle','--');
+    xlim([0.25 2.75]);
+    xticks([1 2]);
+    xticklabels(congruency_labels([1,3]));
+    yticks([-10, 0, 10]);
+    ylim([-15 15]);
+    % add individuals
+    plot(xpos_offset, [congruency_er(:,1)-congruency_er(:,2),congruency_er(:,3)-congruency_er(:,2)], 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
+    scatter(ones(25,1)*xpos_offset(1), congruency_er(:,1)-congruency_er(:,2), 20, get_colour("blue", ""), 'filled');
+    scatter(ones(25,1)*xpos_offset(2), congruency_er(:,3)-congruency_er(:,2), 20,  get_colour("red", ""), 'filled');  
+    
+    % general
+    set(gcf(), 'Position', [800 300 880 800]);
+
+    axes = {tL, tR, bL, bR};
+    for i = 1:size(axes,2)
+        set(axes{i}, 'Box', 'on');
+        set(axes{i}, 'FontSize', [24.8]);
+        set(axes{i}, 'FontName', 'Aptos');
+        set(axes{i}.XAxis, 'FontSize', 18);
+        set(axes{i}, 'LineWidth', 1.33);
+    end
+
+    bL.YLabel.Position = [-0.6417   20.0000   -1.0000];
+
+    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\behavioural_consequences_of_selection", "-dsvg")
+    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\behavioural_consequences_of_selection", "-dpng")
      
+    %% do some stats over previous figure
+    n = size(pp2do,2);
+    dt_tbl = table([1:n,1:n,1:n]', [congruency_dt(:,1);congruency_dt(:,2);congruency_dt(:,3)],[ones(n,1);ones(n,1)*2;ones(n,1)*3], 'VariableNames', {'participant_id', 'decision_time', 'condition'});
+    er_tbl = table([1:n,1:n,1:n]', [congruency_er(:,1);congruency_er(:,2);congruency_er(:,3)],[ones(n,1);ones(n,1)*2;ones(n,1)*3], 'VariableNames', {'participant_id', 'error', 'condition'});
+
+    dt_lme = fitlme(dt_tbl,'decision_time ~ condition + (1|participant_id)')
+    anova(dt_lme)
+    er_lme = fitlme(er_tbl,'error ~ condition + (1|participant_id)')
+    anova(er_lme)
+
+    %post-hoc pairwise comparison
+    p_values = zeros(3,2)
+    [h,p_values(1,1),ci,stats] = ttest(congruency_dt(:,1), congruency_dt(:,2));
+    [h,p_values(2,1),ci,stats] = ttest(congruency_dt(:,2), congruency_dt(:,3));
+    [h,p_values(3,1),ci,stats] = ttest(congruency_dt(:,1), congruency_dt(:,3));
+
+    [h,p_values(1,2),ci,stats] = ttest(congruency_er(:,1), congruency_er(:,2));
+    [h,p_values(2,2),ci,stats] = ttest(congruency_er(:,2), congruency_er(:,3));
+    [h,p_values(3,2),ci,stats] = ttest(congruency_er(:,1), congruency_er(:,3));
+   
 end
 
 %% see performance per block (for fun for participants)

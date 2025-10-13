@@ -9,7 +9,7 @@ pp2do           = setdiff(1:26,[2,18,24]);
 oneOrTwoD       = 1;        oneOrTwoD_options = {'_1D','_2D'};
 nsmooth         = 200;
 plotSinglePps   = 0;
-plotGAs         = 0;
+plotGAs         = 1;
 plotFigures     = 0;
 xlimtoplot      = [-100 1500];
 
@@ -102,7 +102,7 @@ if plotSinglePps
     for sp = 1:s
         subplot(subplot_size,subplot_size,sp); hold on;
         saccadesize.effect_individual = squeeze(d6(sp,:,:,:)); % put in data from this pp
-        cfg.channel = 2; % congruent
+        cfg.channel = 7; % congruent + incongruent (as related to cue)
         ft_singleplotTFR(cfg, saccadesize);
         title(pp2do(sp));
     end
@@ -117,7 +117,7 @@ if plotSinglePps
     for sp = 1:s
         subplot(subplot_size,subplot_size,sp); hold on;
         saccadesize.effect_individual = squeeze(d6(sp,:,:,:)); % put in data from this pp
-        cfg.channel = 3; % incongruent
+        cfg.channel = 3; % neutral
         ft_singleplotTFR(cfg, saccadesize);
         title(pp2do(sp));
     end
@@ -128,7 +128,7 @@ end
 if plotGAs
     % right and left cues, per condition
     figure;
-    for sp = [1:4]
+    for sp = [1:6]
         subplot(2,4,sp); hold on; title(saccade.label(sp));
         p1 = frevede_errorbarplot(saccade.time, squeeze(d1(:,sp,:)), [1,0,0], 'se');
         p2 = frevede_errorbarplot(saccade.time, squeeze(d2(:,sp,:)), [0,0,1], 'se');
@@ -139,7 +139,7 @@ if plotGAs
     
     % towardness per condition - gaze shift effect X saccade size
     figure;
-    for sp = [1:4]
+    for sp = [1:6]
         subplot(2,4,sp); hold on; title(saccade.label(sp));
         frevede_errorbarplot(saccade.time, squeeze(d3(:,sp,:)), [0,0,0], 'both');
         plot(xlim, [0,0], '--k');
@@ -158,12 +158,23 @@ if plotGAs
     xlim(xlimtoplot);
     ylabel('Rate (Hz)');
     xlabel('Time (ms)');
+    title('All conditions overlayed');
     
     %% effect congruent - incongruent
     ylimit = [-0.3, 0.3];
     figure;
     hold on;
-    p1 = frevede_errorbarplot(saccade.time, squeeze((d3(:,2,:) - d3(:,3,:)) ./ 2), 'k', 'both'); %should be same as cue-match condition (nr. 5)
+    p1 = frevede_errorbarplot(saccade.time, squeeze((d3(:,2,:) - d3(:,4,:)) ./ 2), 'k', 'both'); %should be same as cue-match condition (nr. 7)
+    plot(xlim, [0,0], '--k');
+    plot([0,0], ylimit, '--k');
+    legend([p1], saccade.label(1));
+    xlim(xlimtoplot);
+    ylabel('Rate (Hz)');
+    xlabel('Time (ms)');
+
+    figure;
+    hold on;
+    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,7,:)), 'k', 'both'); %should be same as above
     plot(xlim, [0,0], '--k');
     plot([0,0], ylimit, '--k');
     legend([p1], saccade.label(1));
@@ -175,8 +186,8 @@ if plotGAs
     ylimit = [-0.3, 0.3];
     figure;
     hold on;
-    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,8,:)), 'b', 'both');
-    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,9,:)), 'r', 'both');
+    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,10,:)), 'b', 'both');
+    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,11,:)), 'r', 'both');
     plot(xlim, [0,0], '--k');
     plot([0,0], ylimit, '--k');
     legend([p1, p2], {'pressed', 'did not press'});
@@ -189,11 +200,25 @@ if plotGAs
 
     figure;
     hold on;
-    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,10,:)), 'b', 'both');
-    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,11,:)), 'r', 'both');
+    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,12,:)), 'b', 'both');
+    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,13,:)), 'r', 'both');
     plot(xlim, [0,0], '--k');
     plot([0,0], ylimit, '--k');
     legend([p1, p2], {'should have pressed', 'should not have pressed'});
+    xlim(xlimtoplot);
+    ylabel('Rate (Hz)');
+    xlabel('Time (ms)');
+
+    %% effect of special neutral vs task-free neutral
+    ylimit = [-0.3, 0.3];
+
+    figure;
+    hold on;
+    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,5,:)), [0,1,0], 'both');
+    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,6,:)), [0.5,0.5,0.5], 'both');
+    plot(xlim, [0,0], '--k');
+    plot([0,0], ylimit, '--k');
+    legend([p1, p2], {'neutral with task', 'neutral without task'});
     xlim(xlimtoplot);
     ylabel('Rate (Hz)');
     xlabel('Time (ms)');
@@ -202,30 +227,31 @@ if plotGAs
     cfg = [];
     cfg.parameter = 'effect';
     cfg.figure = 'gcf';
-    cfg.zlim = [-0.1, 0.1];
+    % cfg.zlim = [-0.1, 0.1];
+    cfg.zlim = 'maxabs';
     cfg.xlim = xlimtoplot;
     cfg.colormap = 'jet';
     % per condition
     figure;
-    for chan = [1:4]
+    for chan = [1:7]
         cfg.channel = chan;
-        subplot(2,4,chan); ft_singleplotTFR(cfg, saccadesize);
+        subplot(2,4,chan);
+        ft_singleplotTFR(cfg, saccadesize);
+        ylabel('Saccade size (dva)')
+        xlabel('Time (ms)')
+        ylim([0.2 6.8]);
     end
-    % cfg.channel = 4;
-    % ft_singleplotTFR(cfg, saccadesize);
-    ylabel('Saccade size (dva)')
-    xlabel('Time (ms)')
-    hold on
-    plot([0,0], [0, 7], '--k');
+    % hold on
+    % plot([0,0], [0, 7], '--k');
     % plot([1500,1500], [0, 7], '--', 'LineWidth',3, 'Color', [0.6, 0.6, 0.6]);
-    ylim([0.2 6.8]);
+    
 
     %% plot effect of performance (median-split) on saccade data
     figure;
     subplot(2,2,1)
     hold on
-    c1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,16,:)), [0.5, 0.5, 0.5], 'se');
-    c2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,12,:)), 'b', 'se');
+    c1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,18,:)), [0.5, 0.5, 0.5], 'se');
+    c2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,14,:)), 'b', 'se');
     legend([c1, c2], {'above median DT', 'below median DT'});
     xlim(xlimtoplot);
     title('Congruent');
@@ -233,24 +259,24 @@ if plotGAs
 
     subplot(2,2,2)
     hold on
-    i1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,17,:)), [0.5, 0.5, 0.5], 'se');
-    i2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,13,:)), 'r', 'se');
+    i1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,19,:)), [0.5, 0.5, 0.5], 'se');
+    i2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,15,:)), 'r', 'se');
     legend([i1, i2], {'above median DT', 'below median DT'});
     xlim(xlimtoplot);
     title('Incongruent');
 
     subplot(2,2,3)
     hold on
-    c3 = frevede_errorbarplot(saccade.time, squeeze(d3(:,18,:)), [0.5, 0.5, 0.5], 'se');
-    c4 = frevede_errorbarplot(saccade.time, squeeze(d3(:,14,:)), 'b', 'se');
+    c3 = frevede_errorbarplot(saccade.time, squeeze(d3(:,20,:)), [0.5, 0.5, 0.5], 'se');
+    c4 = frevede_errorbarplot(saccade.time, squeeze(d3(:,16,:)), 'b', 'se');
     legend([c3, c4], {'above median ER', 'below median ER'});
     xlim(xlimtoplot);
     ylabel('Saccade bias (Hz)');
 
     subplot(2,2,4)
     hold on
-    i3 = frevede_errorbarplot(saccade.time, squeeze(d3(:,19,:)), [0.5, 0.5, 0.5], 'se');
-    i4 = frevede_errorbarplot(saccade.time, squeeze(d3(:,15,:)), 'r', 'se');
+    i3 = frevede_errorbarplot(saccade.time, squeeze(d3(:,21,:)), [0.5, 0.5, 0.5], 'se');
+    i4 = frevede_errorbarplot(saccade.time, squeeze(d3(:,17,:)), 'r', 'se');
     legend([i3, i4], {'above median ER', 'below median ER'});
     xlim(xlimtoplot);
 
@@ -258,8 +284,8 @@ if plotGAs
     % as timecourse
     figure;
     hold on
-    j1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,12,:)) - squeeze(d3(:,16,:)), 'b', 'se');
-    j2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,13,:)) - squeeze(d3(:,17,:)), 'r', 'se');
+    j1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,14,:)) - squeeze(d3(:,18,:)), 'b', 'se');
+    j2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,15,:)) - squeeze(d3(:,19,:)), 'r', 'se');
     ylabel('Saccade bias (Hz)');
     xlabel('Time (ms)');
     legend([j1, j2], {'Congruent', 'Incongruent'});
@@ -306,7 +332,7 @@ if plotFigures
     statcfg.statMethod = 'montecarlo';
     
     timeframe = [951:2451]; %0 - 1500 ms post-cue
-    stat = frevede_ftclusterstat1D(statcfg, squeeze(d3(:,5,timeframe)), zeros(size(squeeze(d3(:,5,timeframe)))));
+    stat = frevede_ftclusterstat1D(statcfg, squeeze(d3(:,7,timeframe)), zeros(size(squeeze(d3(:,7,timeframe)))));
     mask = double(stat.mask); mask(mask==0) = nan; % nan data that is not part of mark
     
    %%
@@ -316,8 +342,8 @@ if plotFigures
     % cue-matching
     tL = subplot(1,3,1);
     hold on
-    p1 = frevede_errorbarplot(saccade.time, squeeze(d1(:,5,:)), get_colour("blue", ""), 'se');
-    p2 = frevede_errorbarplot(saccade.time, squeeze(d2(:,5,:)), get_colour("red", ""), 'se');
+    p1 = frevede_errorbarplot(saccade.time, squeeze(d1(:,7,:)), get_colour("blue", ""), 'se');
+    p2 = frevede_errorbarplot(saccade.time, squeeze(d2(:,7,:)), get_colour("red", ""), 'se');
     p1.LineWidth = line;
     p2.LineWidth = line;
     legend([p1, p2], {'toward', 'away'}, 'EdgeColor','none', 'AutoUpdate','off', 'FontSize', 17);
@@ -331,7 +357,7 @@ if plotFigures
 
     mL = subplot(1,3,2);
     hold on
-    p3 = frevede_errorbarplot(saccade.time, squeeze(d3(:,5,:)), get_colour("pink", ""), 'se');
+    p3 = frevede_errorbarplot(saccade.time, squeeze(d3(:,7,:)), get_colour("pink", ""), 'se');
     p3.LineWidth = line;
     yline(0, 'LineWidth',2, 'Color',[107, 107, 107]/255, 'LineStyle','--');
     xline(0, 'LineWidth',2, 'Color',[107, 107, 107]/255, 'LineStyle','--');
@@ -343,7 +369,7 @@ if plotFigures
     ylabel('Saccade bias (ΔHz)');
     
     bL = subplot(1,3,3);
-    cfg.channel = 5;
+    cfg.channel = 7;
     ft_singleplotTFR(cfg, saccadesize);
     yline(6-4/2, 'LineWidth',2, 'Color',[107, 107, 107]/255, 'LineStyle','--');
     xline(0, 'LineWidth',2, 'Color',[107, 107, 107]/255, 'LineStyle','--');
@@ -368,9 +394,6 @@ if plotFigures
         
     end
 
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_post_cue", "-dsvg")
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_post_cue", "-dpng")
-
     %% effect on attentional selection latency (bias post-probe)
     line = 2;
 
@@ -385,7 +408,7 @@ if plotFigures
     p3.LineWidth = 3;
     xline(1500, 'LineWidth', 3, 'Color',[107, 107, 107]/255, 'LineStyle','--');
     yline(0, 'LineWidth',3, 'Color',[107, 107, 107]/255, 'LineStyle','--');
-    ylim([-0.2 0.5]);
+    ylim([-0.2 0.8]);
     yticks([-0.2, 0, 0.2, 0.4]);
     xlim([1400, 2400]);
     xticks([1500, 1800, 2100, 2400]);
@@ -490,9 +513,6 @@ if plotFigures
         set(axes{i}, 'FontName', 'Aptos');
         set(axes{i}, 'LineWidth', 1.49);
     end
-
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_post_probe", "-dsvg")
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_post_probe", "-dpng")
 
     
 end

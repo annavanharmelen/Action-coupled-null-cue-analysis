@@ -5,7 +5,7 @@ function param = getSubjParam(pp)
 %% set path and pp-specific file locations
 unique_numbers = [78,23,87,63,29,38,28,80,68,45,32,95,93,48,56,47,40,79,84,49,31,36,20,50,85,60]; %needs to be in the right order
 
-param.path = '\\labsdfs.labs.vu.nl\labsdfs\FGB-ETP-CogPsy-ProactiveBrainLab\core_lab_members\Anna\Data\vidi5 - action-coupled-null-cue\';
+param.path = '\\scistor.vu.nl\shares\FGB-ETP-CogPsy-ProactiveBrainLab\core_lab_members\Laurie\extra_neutral\';
 
 if pp < 10
     param.subjName = sprintf('pp0%d', pp);

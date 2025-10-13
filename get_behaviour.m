@@ -3,10 +3,10 @@ close all
 clc
 
 %% set parameters and loops
-see_performance = 0;
+see_performance = 1;
 display_percentageok = 1;
 plot_individuals = 0;
-plot_averages = 0;
+plot_averages = 1;
 
 pp2do = setdiff(1:26,[2,18,24]); 
 p = 0;
@@ -74,6 +74,7 @@ for pp = pp2do
     colour_one_trials = behdata.capture_colour_id == 1;
     colour_two_trials = behdata.capture_colour_id == 2;
     colour_three_trials = behdata.capture_colour_id == 3;
+    colour_four_trials = behdata.capture_colour_id == 4;
 
     respond_trials = ismember(behdata.block_type, {'respond 3'});
     not_respond_trials = ismember(behdata.block_type, {'respond not 3'});
@@ -290,9 +291,6 @@ if plot_averages
     tR.Position = [0.6530    0.5838    0.3177    0.3412];
     bR.Position = [0.6530    0.1100    0.3177    0.3412];
 
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\behavioural_consequences_of_selection_mixture_modelling", "-dsvg")
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\behavioural_consequences_of_selection_mixture_modelling", "-dpng")
-     
 %% stats over previous figure (mixture modelling)
     % some stats
     n = size(pp2do,2);
@@ -583,8 +581,8 @@ if plot_averages
     ylim([-450 450]);
     % add individuals
     plot(xpos_offset, [congruency_dt(:,1)-congruency_dt(:,2),congruency_dt(:,3)-congruency_dt(:,2)], 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
-    scatter(ones(25,1)*xpos_offset(1), congruency_dt(:,1)-congruency_dt(:,2), 20, get_colour("blue", ""), 'filled');
-    scatter(ones(25,1)*xpos_offset(2), congruency_dt(:,3)-congruency_dt(:,2), 20,  get_colour("red", ""), 'filled');
+    scatter(ones(23,1)*xpos_offset(1), congruency_dt(:,1)-congruency_dt(:,2), 20, get_colour("blue", ""), 'filled');
+    scatter(ones(23,1)*xpos_offset(2), congruency_dt(:,3)-congruency_dt(:,2), 20,  get_colour("red", ""), 'filled');
     
     
     % error
@@ -641,9 +639,6 @@ if plot_averages
 
     bL.YLabel.Position = [-0.6417   20.0000   -1.0000];
 
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\behavioural_consequences_of_selection", "-dsvg")
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\behavioural_consequences_of_selection", "-dpng")
-     
     %% do some stats over previous figure
     n = size(pp2do,2);
     dt_tbl = table([1:n,1:n,1:n]', [congruency_dt(:,1);congruency_dt(:,2);congruency_dt(:,3)],[ones(n,1);ones(n,1)*2;ones(n,1)*3], 'VariableNames', {'participant_id', 'decision_time', 'condition'});

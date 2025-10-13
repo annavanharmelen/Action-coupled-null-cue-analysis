@@ -4,10 +4,10 @@
 clear; clc; close all;
 
 %% parameters
-for pp = [1:8];
+for pp = [1:26];
 
     oneOrTwoD       = 1; oneOrTwoD_options = {'_1D','_2D'};
-    plotResults     = 1;
+    plotResults     = 0;
 
     %% load epoched data of this participant data
     param = getSubjParam(pp);
@@ -44,12 +44,35 @@ for pp = [1:8];
     captureN = ismember(tl.trialinfo(:,1), [29,210,219,220]);
 
     % responded or not
-    % todo maybe
+    behdata = readtable(param.log);
+    if size(behdata,1) ~= size(eyedata.trial, 2) %quick sanity check just in case
+        continue
+        throw(MException('get_saccadebias:trial_numbers', "Loaded behavioural data has a different number of trials to the eyedata."));
+    end
+
+    pressed = logical(ismember(behdata.cue_hit, {'True'}) + ismember(behdata.cue_false_alarm, {'True'}));
+    not_pressed = and(ismember(behdata.cue_hit, {'False'}), ismember(behdata.cue_false_alarm, {'False'}));
+
+    if sum(pressed) + sum(not_pressed) ~= size(eyedata.trial, 2) %quick sanity check just in case
+        throw(MException('get_saccadebias:pressed_trials', "Some trials were not recognised as 'pressed' or 'not_pressed'."));
+    end
 
     % should respond or not
-    should_respond = ismember(tl.trialinfo(:,1), [21:29, 210]);
-    should_not_respond = ismember(tl.trialinfo(:,1), [211:220]);
+    should_respond = ismember(tl.trialinfo(:,1), [29,210, 211:218]);
+    should_not_respond = ismember(tl.trialinfo(:,1), [21:28, 219:220]);
 
+    % block type
+    respond_neutral = ismember(tl.trialinfo(:,1), [21:29, 210]);
+    respond_not_neutral = ismember(tl.trialinfo(:,1), [211:220]);
+
+    % median-split on behaviour
+    behdata = readtable(getSubjParam(pp).log);
+    oktrials = abs(zscore(behdata.idle_reaction_time_in_ms))<=3; 
+    bm_dt = (behdata.idle_reaction_time_in_ms < median(behdata.idle_reaction_time_in_ms(oktrials)))&oktrials;
+    am_dt = (behdata.idle_reaction_time_in_ms > median(behdata.idle_reaction_time_in_ms(oktrials)))&oktrials;
+    bm_er = (behdata.absolute_difference < median(behdata.absolute_difference(oktrials)))&oktrials;
+    am_er = (behdata.absolute_difference > median(behdata.absolute_difference(oktrials)))&oktrials;
+    
     % channels
     chX = ismember(tl.label, 'eyeX');
     chY = ismember(tl.label, 'eyeY');
@@ -76,22 +99,47 @@ for pp = [1:8];
     %% get relevant contrasts out
     saccade = [];
     saccade.time = times;
-    saccade.label = {'all', 'congruent', 'incongruent', 'neutral'};
+    saccade.label = {'all', 'con_tar', 'neu_tar', 'incon_tar', 'cuematch_cue', ...
+        'con_cue', 'incon_cue', 'cuematch_press', 'cuematch_notpress', ...
+        'cuematch_should_press', 'cuematch_should_notpress',...
+        'c_bm_dt', 'i_bm_dt', 'c_bm_er', 'i_bm_er', ...
+        'c_am_dt', 'i_am_dt', 'c_am_er', 'i_am_er'};
 
-    for selection = [1:4] % conditions.
+    for selection = [1:19] % conditions.
         if     selection == 1  sel = ones(size(targL));
         elseif selection == 2  sel = congruent;
-        elseif selection == 3  sel = incongruent;
-        elseif selection == 4  sel = neutral;
+        elseif selection == 3  sel = neutral;
+        elseif selection == 4  sel = incongruent;
+        elseif selection == 5  sel = any([congruent;incongruent]);
+        elseif selection == 6  sel = congruent;
+        elseif selection == 7  sel = incongruent;
+        elseif selection == 8  sel = any([congruent;incongruent])&pressed;
+        elseif selection == 9  sel = any([congruent;incongruent])&not_pressed;
+        elseif selection == 10 sel = any([congruent;incongruent])&should_respond;
+        elseif selection == 11 sel = any([congruent;incongruent])&should_not_respond;
+        elseif selection == 12 sel = congruent&bm_dt;
+        elseif selection == 13 sel = incongruent&bm_dt;
+        elseif selection == 14 sel = congruent&bm_er;
+        elseif selection == 15 sel = incongruent&bm_er;
+        elseif selection == 16 sel = congruent&am_dt;
+        elseif selection == 17 sel = incongruent&am_dt;
+        elseif selection == 18 sel = congruent&am_er;
+        elseif selection == 19 sel = incongruent&am_er;
         end
 
-        saccade.toward(selection,:) =  (mean(shiftsL(targL&sel,:)) + mean(shiftsR(targR&sel,:))) ./ 2;
-        saccade.away(selection,:)  =   (mean(shiftsL(targR&sel,:)) + mean(shiftsR(targL&sel,:))) ./ 2;
-    end
+        if selection <= 4
+            saccade.toward(selection,:) =  (mean(shiftsL(targL&sel,:)) + mean(shiftsR(targR&sel,:))) ./ 2;
+            saccade.away(selection,:)  =   (mean(shiftsL(targR&sel,:)) + mean(shiftsR(targL&sel,:))) ./ 2;
 
+        else
+            saccade.toward(selection,:) =  (mean(shiftsL(captureL&sel,:)) + mean(shiftsR(captureR&sel,:))) ./ 2;
+            saccade.away(selection,:)  =   (mean(shiftsL(captureR&sel,:)) + mean(shiftsR(captureL&sel,:))) ./ 2;
+        end
+    
     % add towardness field
     saccade.effect = (saccade.toward - saccade.away);
-
+    
+    end
     
     %% smooth and turn to Hz
     integrationwindow = 100; % window over which to integrate saccade counts
@@ -142,7 +190,7 @@ for pp = [1:8];
     saccadesize.dimord = 'chan_freq_time';
     saccadesize.freq = halfbin:0.1:7-halfbin; % shift sizes, as if "frequency axis" for time-frequency plot
     saccadesize.time = times;
-    saccadesize.label = {'all', 'congruent', 'incongruent', 'neutral'};
+    saccadesize.label = {'all', 'con_tar', 'incon_tar', 'neu_tar', 'cuematch_cue'};
 
     cnt = 0;
     for sz = saccadesize.freq;
@@ -152,18 +200,22 @@ for pp = [1:8];
         shiftsL = shiftsX<-sz+halfbin & shiftsX > -sz-halfbin; % left shifts within this range
         shiftsR = shiftsX>sz-halfbin  & shiftsX < sz+halfbin; % right shifts within this range
 
-    % add towardness field
-    saccade.effect = (saccade.toward - saccade.away);
-
-        for selection = [1:4] % conditions.
+        for selection = [1:5] % conditions.
             if     selection == 1  sel = ones(size(targL));
             elseif selection == 2  sel = congruent;
             elseif selection == 3  sel = incongruent;
             elseif selection == 4  sel = neutral;
+            elseif selection == 5  sel = any([congruent;incongruent]);
             end
 
-            saccadesize.toward(selection,cnt,:) = (mean(shiftsL(targL&sel,:)) + mean(shiftsR(targR&sel,:))) ./ 2;
-            saccadesize.away(selection,cnt,:) =   (mean(shiftsL(targR&sel,:)) + mean(shiftsR(targL&sel,:))) ./ 2;
+            if selection <= 4
+                saccadesize.toward(selection,cnt,:) = (mean(shiftsL(targL&sel,:)) + mean(shiftsR(targR&sel,:))) ./ 2;
+                saccadesize.away(selection,cnt,:) =   (mean(shiftsL(targR&sel,:)) + mean(shiftsR(targL&sel,:))) ./ 2;
+            else
+                saccadesize.toward(selection,cnt,:) =  (mean(shiftsL(captureL&sel,:)) + mean(shiftsR(captureR&sel,:))) ./ 2;
+                saccadesize.away(selection,cnt,:)  =   (mean(shiftsL(captureR&sel,:)) + mean(shiftsR(captureL&sel,:))) ./ 2;
+            end
+
         end
 
     end
@@ -182,9 +234,9 @@ for pp = [1:8];
         cfg.figure = 'gcf';
         %cfg.zlim = [-0.01, 0.01];
         figure;
-        for chan = 1:4
+        for chan = 1:5
             cfg.channel = chan;
-            subplot(2,2,chan); ft_singleplotTFR(cfg, saccadesize);
+            subplot(2,3,chan); ft_singleplotTFR(cfg, saccadesize);
         end
         colormap('jet');
         drawnow;
@@ -196,4 +248,6 @@ for pp = [1:8];
     %% close loops
 end % end pp loop
 
-
+%signal that script is done
+load gong.mat
+sound(y)

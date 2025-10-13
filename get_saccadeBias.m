@@ -100,35 +100,38 @@ for pp = setdiff(1:26,[2,18,24]);
     %% get relevant contrasts out
     saccade = [];
     saccade.time = times;
-    saccade.label = {'all', 'con_tar', 'neu_tar', 'incon_tar', 'cuematch_cue', ...
+    saccade.label = {'all', 'con_tar', 'neu_tar', 'incon_tar', ...
+        'neu_special_tar', 'neu_no_task_tar', 'cuematch_cue', ...
         'con_cue', 'incon_cue', 'cuematch_press', 'cuematch_notpress', ...
         'cuematch_should_press', 'cuematch_should_notpress',...
         'c_bm_dt', 'i_bm_dt', 'c_bm_er', 'i_bm_er', ...
         'c_am_dt', 'i_am_dt', 'c_am_er', 'i_am_er'};
 
-    for selection = [1:19] % conditions.
+    for selection = [1:21] % conditions.
         if     selection == 1  sel = ones(size(targL));
         elseif selection == 2  sel = congruent;
         elseif selection == 3  sel = neutral;
         elseif selection == 4  sel = incongruent;
-        elseif selection == 5  sel = any([congruent;incongruent]);
-        elseif selection == 6  sel = congruent;
-        elseif selection == 7  sel = incongruent;
-        elseif selection == 8  sel = any([congruent;incongruent])&pressed;
-        elseif selection == 9  sel = any([congruent;incongruent])&not_pressed;
-        elseif selection == 10 sel = any([congruent;incongruent])&should_respond;
-        elseif selection == 11 sel = any([congruent;incongruent])&should_not_respond;
-        elseif selection == 12 sel = congruent&bm_dt;
-        elseif selection == 13 sel = incongruent&bm_dt;
-        elseif selection == 14 sel = congruent&bm_er;
-        elseif selection == 15 sel = incongruent&bm_er;
-        elseif selection == 16 sel = congruent&am_dt;
-        elseif selection == 17 sel = incongruent&am_dt;
-        elseif selection == 18 sel = congruent&am_er;
-        elseif selection == 19 sel = incongruent&am_er;
+        elseif selection == 5  sel = neutral_3;
+        elseif selection == 6  sel = neutral_4;
+        elseif selection == 7  sel = any([congruent;incongruent]);
+        elseif selection == 8  sel = congruent;
+        elseif selection == 9  sel = incongruent;
+        elseif selection == 10  sel = any([congruent;incongruent])&pressed;
+        elseif selection == 11 sel = any([congruent;incongruent])&not_pressed;
+        elseif selection == 12 sel = any([congruent;incongruent])&should_respond;
+        elseif selection == 13 sel = any([congruent;incongruent])&should_not_respond;
+        elseif selection == 14 sel = congruent&bm_dt;
+        elseif selection == 15 sel = incongruent&bm_dt;
+        elseif selection == 16 sel = congruent&bm_er;
+        elseif selection == 17 sel = incongruent&bm_er;
+        elseif selection == 18 sel = congruent&am_dt;
+        elseif selection == 19 sel = incongruent&am_dt;
+        elseif selection == 20 sel = congruent&am_er;
+        elseif selection == 21 sel = incongruent&am_er;
         end
 
-        if selection <= 4
+        if selection <= 6
             saccade.toward(selection,:) =  (mean(shiftsL(targL&sel,:)) + mean(shiftsR(targR&sel,:))) ./ 2;
             saccade.away(selection,:)  =   (mean(shiftsL(targR&sel,:)) + mean(shiftsR(targL&sel,:))) ./ 2;
 
@@ -191,8 +194,8 @@ for pp = setdiff(1:26,[2,18,24]);
     saccadesize.dimord = 'chan_freq_time';
     saccadesize.freq = halfbin:0.1:7-halfbin; % shift sizes, as if "frequency axis" for time-frequency plot
     saccadesize.time = times;
-    saccadesize.label = {'all', 'con_tar', 'incon_tar', 'neu_tar', 'cuematch_cue'};
-
+    saccadesize.label = {'all', 'con_tar', 'neu_tar', 'incon_tar', 'neu_special_tar', 'neu_no_task_tar', 'cuematch_cue'};
+    
     cnt = 0;
     for sz = saccadesize.freq;
         cnt = cnt+1;
@@ -201,15 +204,17 @@ for pp = setdiff(1:26,[2,18,24]);
         shiftsL = shiftsX<-sz+halfbin & shiftsX > -sz-halfbin; % left shifts within this range
         shiftsR = shiftsX>sz-halfbin  & shiftsX < sz+halfbin; % right shifts within this range
 
-        for selection = [1:5] % conditions.
+        for selection = [1:7] % conditions.
             if     selection == 1  sel = ones(size(targL));
             elseif selection == 2  sel = congruent;
-            elseif selection == 3  sel = incongruent;
-            elseif selection == 4  sel = neutral;
-            elseif selection == 5  sel = any([congruent;incongruent]);
+            elseif selection == 3  sel = neutral;
+            elseif selection == 4  sel = incongruent;
+            elseif selection == 5  sel = neutral_3;
+            elseif selection == 6  sel = neutral_4;
+            elseif selection == 7  sel = any([congruent;incongruent]);
             end
 
-            if selection <= 4
+            if selection <= 6
                 saccadesize.toward(selection,cnt,:) = (mean(shiftsL(targL&sel,:)) + mean(shiftsR(targR&sel,:))) ./ 2;
                 saccadesize.away(selection,cnt,:) =   (mean(shiftsL(targR&sel,:)) + mean(shiftsR(targL&sel,:))) ./ 2;
             else
@@ -248,7 +253,3 @@ for pp = setdiff(1:26,[2,18,24]);
 
     %% close loops
 end % end pp loop
-
-%signal that script is done
-load gong.mat
-sound(y)

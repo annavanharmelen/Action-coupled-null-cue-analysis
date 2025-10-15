@@ -5,7 +5,7 @@
 clear; clc; close all;
     
 %% parameters
-pp2do           = setdiff(1:26,[2,18,24]);
+pp2do           = setdiff(1:26,[1,2,18,24]);
 oneOrTwoD       = 1;        oneOrTwoD_options = {'_1D','_2D'};
 nsmooth         = 200;
 plotSinglePps   = 0;
@@ -317,7 +317,7 @@ if plotGAs
     legend({'congruent', 'incongruent'});
     
     % first level = condition, second level = fast or slow
-    stats = rm_anova2([avg_saccade_effect(:,1);avg_saccade_effect(:,2);avg_saccade_effect(:,3);avg_saccade_effect(:,4)], repmat([1:25]',4,1), [ones(50,1);ones(50,1)*2], [ones(25,1);ones(25,1)*2;ones(25,1);ones(25,1)*2], {'condition',  'speed'})
+    stats = rm_anova2([avg_saccade_effect(:,1);avg_saccade_effect(:,2);avg_saccade_effect(:,3);avg_saccade_effect(:,4)], repmat([1:22]',4,1), [ones(44,1);ones(44,1)*2], [ones(22,1);ones(22,1)*2;ones(22,1);ones(22,1)*2], {'condition',  'speed'})
     
     [h,p,ci,stats] = ttest(avg_saccade_effect(:,1), avg_saccade_effect(:,2))
     [h,p,ci,stats] = ttest(avg_saccade_effect(:,3), avg_saccade_effect(:,4))

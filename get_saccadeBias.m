@@ -44,6 +44,9 @@ for pp = setdiff(1:26,[2,18,24]);
     captureL = ismember(tl.trialinfo(:,1), [21,24,25,28,213,216,217,220]);
     captureR = ismember(tl.trialinfo(:,1), [22,23,26,27,214,215,218,219]);
 
+    block_respond_3 = ismember(tl.trialinfo(:,1), [21:29,210:212]);
+    block_not_respond_3 = ismember(tl.trialinfo(:,1), [213:224]);
+
     % responded or not
     behdata = readtable(param.log);
     if size(behdata,1) ~= size(eyedata.trial, 2) %quick sanity check just in case
@@ -105,9 +108,10 @@ for pp = setdiff(1:26,[2,18,24]);
         'con_cue', 'incon_cue', 'cuematch_press', 'cuematch_notpress', ...
         'cuematch_should_press', 'cuematch_should_notpress',...
         'c_bm_dt', 'i_bm_dt', 'c_bm_er', 'i_bm_er', ...
-        'c_am_dt', 'i_am_dt', 'c_am_er', 'i_am_er'};
+        'c_am_dt', 'i_am_dt', 'c_am_er', 'i_am_er', ...
+        'block_respond_3', 'block_not_respond_3'};
 
-    for selection = [1:21] % conditions.
+    for selection = [1:23] % conditions.
         if     selection == 1  sel = ones(size(targL));
         elseif selection == 2  sel = congruent;
         elseif selection == 3  sel = neutral;
@@ -129,6 +133,8 @@ for pp = setdiff(1:26,[2,18,24]);
         elseif selection == 19 sel = incongruent&am_dt;
         elseif selection == 20 sel = congruent&am_er;
         elseif selection == 21 sel = incongruent&am_er;
+        elseif selection == 22 sel = any([congruent;incongruent])&block_respond_3;
+        elseif selection == 23 sel = any([congruent;incongruent])&block_not_respond_3;
         end
 
         if selection <= 6

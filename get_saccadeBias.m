@@ -43,6 +43,9 @@ for pp = [1:26];
     captureR = ismember(tl.trialinfo(:,1), [22,23,26,27,212,213,216,217]);
     captureN = ismember(tl.trialinfo(:,1), [29,210,219,220]);
 
+    block_respond_3 = ismember(tl.trialinfo(:,1), [21:29,210]);
+    block_not_respond_3 = ismember(tl.trialinfo(:,1), [211:220]);
+
     % responded or not
     behdata = readtable(param.log);
     if size(behdata,1) ~= size(eyedata.trial, 2) %quick sanity check just in case
@@ -103,9 +106,10 @@ for pp = [1:26];
         'con_cue', 'incon_cue', 'cuematch_press', 'cuematch_notpress', ...
         'cuematch_should_press', 'cuematch_should_notpress',...
         'c_bm_dt', 'i_bm_dt', 'c_bm_er', 'i_bm_er', ...
-        'c_am_dt', 'i_am_dt', 'c_am_er', 'i_am_er'};
+        'c_am_dt', 'i_am_dt', 'c_am_er', 'i_am_er', ...
+        'block_respond_3', 'block_not_respond_3'};
 
-    for selection = [1:19] % conditions.
+    for selection = [1:21] % conditions.
         if     selection == 1  sel = ones(size(targL));
         elseif selection == 2  sel = congruent;
         elseif selection == 3  sel = neutral;
@@ -114,7 +118,7 @@ for pp = [1:26];
         elseif selection == 6  sel = congruent;
         elseif selection == 7  sel = incongruent;
         elseif selection == 8  sel = any([congruent;incongruent])&pressed;
-        elseif selection == 9  sel = any([congruent;incongruent])&not_pressed;
+        elseif selection == 9 sel = any([congruent;incongruent])&not_pressed;
         elseif selection == 10 sel = any([congruent;incongruent])&should_respond;
         elseif selection == 11 sel = any([congruent;incongruent])&should_not_respond;
         elseif selection == 12 sel = congruent&bm_dt;
@@ -125,6 +129,8 @@ for pp = [1:26];
         elseif selection == 17 sel = incongruent&am_dt;
         elseif selection == 18 sel = congruent&am_er;
         elseif selection == 19 sel = incongruent&am_er;
+        elseif selection == 20 sel = any([congruent;incongruent])&block_respond_3;
+        elseif selection == 21 sel = any([congruent;incongruent])&block_not_respond_3;
         end
 
         if selection <= 4

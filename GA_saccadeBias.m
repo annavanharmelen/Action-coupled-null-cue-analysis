@@ -201,8 +201,8 @@ if plotGAs
     %% effect of block type
     figure;
     hold on;
-    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,22,:)), [1,0,0], 'both');
-    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,23,:)), [0,0,1], 'both');
+    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,20,:)), [1,0,0], 'both');
+    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,21,:)), [0,0,1], 'both');
     plot(xlim, [0,0], '--k');
     plot([0,0], ylimit, '--k');
     legend([p1, p2], {'respond_3 block', 'respond_not_3 block'});

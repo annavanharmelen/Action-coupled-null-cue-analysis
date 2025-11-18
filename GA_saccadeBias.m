@@ -5,12 +5,12 @@
 clear; clc; close all;
     
 %% parameters
-pp2do           = setdiff(1:26,[1,2,18,24]);
+pp2do           = setdiff(1:30,[1,2,11,18,24]);
 oneOrTwoD       = 1;        oneOrTwoD_options = {'_1D','_2D'};
 nsmooth         = 200;
-plotSinglePps   = 0;
+plotSinglePps   = 1;
 plotGAs         = 1;
-plotFigures     = 0;
+plotFigures     = 1;
 xlimtoplot      = [-100 1500];
 
 %% set visual parameters

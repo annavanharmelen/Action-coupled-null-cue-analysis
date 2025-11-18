@@ -4,7 +4,7 @@
 clear; clc; close all;
 
 %% parameters
-for pp = setdiff(1:26,[1,2,18,24]);
+for pp = setdiff(1:30,2,18);
 
     oneOrTwoD       = 1; oneOrTwoD_options = {'_1D','_2D'};
     plotResults     = 0;

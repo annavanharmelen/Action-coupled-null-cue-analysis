@@ -8,7 +8,7 @@ display_percentageok = 1;
 plot_individuals = 0;
 plot_averages = 1;
 
-pp2do = setdiff(1:26,[1,2,18,24]); 
+pp2do = setdiff(1:30,[1,2,11,18,24]); 
 p = 0;
 
 [bar_size, colours, dark_colours, labels, subplot_size, percentageok] = setBehaviourParam(pp2do);
@@ -581,8 +581,8 @@ if plot_averages
     ylim([-450 450]);
     % add individuals
     plot(xpos_offset, [congruency_dt(:,1)-congruency_dt(:,2),congruency_dt(:,3)-congruency_dt(:,2)], 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
-    scatter(ones(23,1)*xpos_offset(1), congruency_dt(:,1)-congruency_dt(:,2), 20, get_colour("blue", ""), 'filled');
-    scatter(ones(23,1)*xpos_offset(2), congruency_dt(:,3)-congruency_dt(:,2), 20,  get_colour("red", ""), 'filled');
+    scatter(ones(25,1)*xpos_offset(1), congruency_dt(:,1)-congruency_dt(:,2), 20, get_colour("blue", ""), 'filled');
+    scatter(ones(25,1)*xpos_offset(2), congruency_dt(:,3)-congruency_dt(:,2), 20,  get_colour("red", ""), 'filled');
     
     
     % error

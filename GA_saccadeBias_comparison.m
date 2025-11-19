@@ -4,7 +4,7 @@
 clear; clc; close all;
     
 %% parameters
-pp2do           = [[1:9,11:26];[1:8, 10:16, 18:27];[1:25]];
+pp2do           = [[1:9,11:26];[1:8, 10:16, 18:27];[1:25];[3:10,12:17,19:23,25:30]];
 
 oneOrTwoD       = 1;        oneOrTwoD_options = {'_1D','_2D'};
 nsmooth         = 200;
@@ -16,7 +16,7 @@ xlimtoplot      = [-100 1500];
 %% load and aggregate the data from each study
 % this all only works so easily because all the data was time-locked to the
 % cue in the same manner (from 1s before to 2.5s after)
-for s = [1:3]
+for s = [1:4]
     disp([newline(), 'getting data from study ', num2str(s)]);
     p = 0;
 
@@ -60,9 +60,24 @@ for s = [1:3]
         if s == 1
             avg_saccade_effect(1,p,s) = mean(saccade.effect(5,saccade.time>=200 & saccade.time<=600));
             avg_saccade_effect(2,p,s) = mean(saccade.effect(5,:));
+        elseif s == 4
+            avg_saccade_effect(1,p,s) = mean(saccade.effect(7,saccade.time>=200 & saccade.time<=600));
+            avg_saccade_effect(2,p,s) = mean(saccade.effect(7,:));
         else
             avg_saccade_effect(1,p,s) = mean(saccade.effect(4,saccade.time>=200 & saccade.time<=600));
             avg_saccade_effect(2,p,s) = mean(saccade.effect(4,:));
+        end
+
+        % save average saccade bias per pp
+        if s == 1
+            max_saccade_effect(1,p,s) = max(saccade.effect(5,saccade.time>=200 & saccade.time<=600));
+            max_saccade_effect(2,p,s) = max(saccade.effect(5,:));
+        elseif s == 4
+            max_saccade_effect(1,p,s) = max(saccade.effect(7,saccade.time>=200 & saccade.time<=600));
+            max_saccade_effect(2,p,s) = max(saccade.effect(7,:));
+        else
+            max_saccade_effect(1,p,s) = max(saccade.effect(4,saccade.time>=200 & saccade.time<=600));
+            max_saccade_effect(2,p,s) = max(saccade.effect(4,:));
         end
     end
 end
@@ -74,9 +89,19 @@ end
 % saccadesize.effect = squeeze(mean(d6));
 
 if plotFigures
+    %% Compare all 4 studies
+    figure;
+    hold on
+    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(1,:,5,:)), [1,0,0], 'se');
+    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(2,:,4,:)), [0,0,1], 'se');
+    p3 = frevede_errorbarplot(saccade.time, squeeze(d3(3,:,4,:)), [0,1,1], 'se');
+    p4 = frevede_errorbarplot(saccade.time, squeeze(d3(4,:,7,:)), [1,0,1], 'se');
+    xlim(xlimtoplot);
+    legend([p1, p2, p3, p4], {'study 1', 'study 2', 'study 3', 'study 4'}, 'EdgeColor', 'none', 'AutoUpdate','off', 'FontSize', 25.4);
+
     %% Effect of having a secondary task for the cue
-    action_data = squeeze(d3(1,:,5,:));
-    no_action_data = reshape(squeeze(d3(2:3,:,4,:)), [2*size(d3,2), size(d3,4)]);
+    action_data = [squeeze(d3(1,:,5,:)); squeeze(d3(4,:,7,:))];
+    no_action_data = [squeeze(d3(2,:,4,:)); squeeze(d3(3,:,4,:))];
 
     figure;
     hold on
@@ -115,11 +140,11 @@ if plotFigures
     mask_no_action = double(stat_no_action.mask); mask_no_action(mask_no_action==0) = nan;
     mask_compare = double(stat_compare.mask); mask_compare(mask_compare==0) = nan;
 
-    % sig = plot(saccade.time(timeframe), mask_action*-0.16, 'Color', get_colour("pink",""), 'LineWidth', 3); %shown already in first figure
-    % sig = plot(saccade.time(timeframe), mask_no_action*-0.165, 'Color', [0.5,0.5,0.5], 'LineWidth', 3); % not significant
-    sig = plot(saccade.time(timeframe), mask_compare*-0.14, 'Color', 'k', 'LineWidth', 6);
+    % sig1 = plot(saccade.time(timeframe), mask_action*-0.16, 'Color', get_colour("pink",""), 'LineWidth', 3); %shown already in first figure
+    % sig2 = plot(saccade.time(timeframe), mask_no_action*-0.165, 'Color', [0.5,0.5,0.5], 'LineWidth', 3); % not significant
+    sig3 = plot(saccade.time(timeframe), mask_compare*-0.14, 'Color', 'k', 'LineWidth', 6);
 
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_effect_of_action", "-dsvg")
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_effect_of_action", "-dpng")
+    % print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_effect_of_action", "-dsvg")
+    % print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_effect_of_action", "-dpng")
 
 end

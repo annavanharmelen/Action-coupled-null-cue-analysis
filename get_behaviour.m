@@ -663,6 +663,21 @@ if plot_averages
     [h,p_values(1,2),ci,stats] = ttest(congruency_er(:,1), congruency_er(:,2));
     [h,p_values(2,2),ci,stats] = ttest(congruency_er(:,2), congruency_er(:,3));
     [h,p_values(3,2),ci,stats] = ttest(congruency_er(:,1), congruency_er(:,3));
+    
+    cohen_ds = zeros(3,2);
+    temp = meanEffectSize(congruency_dt(:,1), congruency_dt(:,2), "Paired", true, "Effect", "cohen");
+    cohen_ds(1,1) = temp.Effect;
+    temp = meanEffectSize(congruency_dt(:,2), congruency_dt(:,3), "Paired", true, "Effect", "cohen");
+    cohen_ds(2,1) = temp.Effect;
+    temp = meanEffectSize(congruency_dt(:,1), congruency_dt(:,3), "Paired", true, "Effect", "cohen");
+    cohen_ds(3,1) = temp.Effect;
+
+    temp = meanEffectSize(congruency_er(:,1), congruency_er(:,2), "Paired", true, "Effect", "cohen");
+    cohen_ds(1,2) = temp.Effect;
+    temp = meanEffectSize(congruency_er(:,2), congruency_er(:,3), "Paired", true, "Effect", "cohen");
+    cohen_ds(2,2) = temp.Effect;
+    temp = meanEffectSize(congruency_er(:,1), congruency_er(:,3), "Paired", true, "Effect", "cohen");
+    cohen_ds(3,2) = temp.Effect;
    
 end
 

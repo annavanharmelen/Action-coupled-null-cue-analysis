@@ -451,11 +451,12 @@ bL.YLabel.Position = [-0.4435   20.0000   -1.0000];
 
 % stats stats stats
 p_values = zeros(2,3);
-[h,p_values(1,1),ci,stats] = ttest(congruency_dt(1,:,1), congruency_dt(1,:,2));
+[h,p_values(1,1),ci,stats] = ttest(reshape(congruency_dt([1,4],:,1), [50,1]), reshape(congruency_dt([1,4],:,2), [50,1]));
+d = meanEffectSize(reshape(congruency_dt([1,4],:,1), [50,1]), reshape(congruency_dt([1,4],:,2), [50,1]), "Paired", true, "Effect", "cohen") 
 [h,p_values(1,2),ci,stats] = ttest(reshape(congruency_dt(2:3,:,1), [50,1]), reshape(congruency_dt(2:3,:,2), [50,1]));
-[h,p_values(1,3),ci,stats] = ttest2(con_dt_effect(:,1), reshape(con_dt_effect(:,2:3), [50,1]));
-[h,p_values(2,1),ci,stats] = ttest(congruency_er(1,:,1), congruency_er(1,:,2));
+[h,p_values(1,3),ci,stats] = ttest2(reshape(con_dt_effect(:,[1,4]), [50,1]), reshape(con_dt_effect(:,2:3), [50,1]));
+[h,p_values(2,1),ci,stats] = ttest(reshape(congruency_er([1,4],:,1), [50,1]), reshape(congruency_er([1,4],:,2), [50,1]));
 [h,p_values(2,2),ci,stats] = ttest(reshape(congruency_er(2:3,:,1), [50,1]), reshape(congruency_er(2:3,:,2), [50,1]));
-[h,p_values(2,3),ci,stats] = ttest2(con_er_effect(:,1), reshape(con_er_effect(:,2:3), [50,1]));
+[h,p_values(2,3),ci,stats] = ttest2(reshape(con_er_effect(:,[1,4]), [50,1]), reshape(con_er_effect(:,2:3), [50,1]));
 
 end

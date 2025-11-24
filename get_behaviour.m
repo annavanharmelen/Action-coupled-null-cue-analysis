@@ -95,13 +95,15 @@ for pp = pp2do
     
     %% save hit/miss/false_alarm/correct_rejection
     % hits, misses, false_alarms, correct_rejections
-    scores(p,1) = sum(behdata.cue_hit == "True");
-    scores(p,2) = sum(miss_trials);
-    scores(p,3) = sum(behdata.cue_false_alarm == "True");
-    scores(p,4) = sum(correct_rejection_trials);
+    scores(p,1) = sum(behdata.cue_hit(oktrials) == "True");
+    scores(p,2) = sum(miss_trials(oktrials));
+    scores(p,3) = sum(behdata.cue_false_alarm(oktrials) == "True");
+    scores(p,4) = sum(correct_rejection_trials(oktrials));
     scores(p,5) = sum(scores(p,1:4));
 
-
+    % response required trials, no response required trials
+	trial_types(p,1) = sum((respond_trials & behdata.capture_colour_id == 3 & oktrials) | (not_respond_trials & behdata.capture_colour_id ~= 3 & oktrials));
+    trial_types(p,2) = sum((respond_trials & behdata.capture_colour_id ~= 3 & oktrials) | (not_respond_trials & behdata.capture_colour_id == 3 & oktrials));
     %% mixture models of target error
     non_target_orientations = behdata.left_orientation;
     non_target_orientations(behdata.target_bar == "left") = behdata.right_orientation(behdata.target_bar == "left");
@@ -199,6 +201,12 @@ for pp = pp2do
     end
 end
 
+%% calculate hit-miss-etc. scores
+hit_scores = scores(:,1) ./ trial_types(:,1);
+miss_scores = scores(:,2) ./ trial_types(:,1); 
+false_alarm_scores = scores(:,3) ./ trial_types(:,2);
+correct_rejection_scores = scores(:,4) ./ trial_types(:,2);
+    
 if plot_averages
 %% plot mixture moduling results
     figure;

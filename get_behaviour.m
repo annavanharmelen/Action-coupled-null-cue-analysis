@@ -90,6 +90,8 @@ for pp = pp2do
     congruent_trials = ismember(behdata.trial_condition, {'congruent'});
     incongruent_trials = ismember(behdata.trial_condition, {'incongruent'});
     neutral_trials = ismember(behdata.trial_condition, {'neutral'});
+    task_neutral_trials = behdata.capture_colour_id == 3;
+    notask_neutral_trials = behdata.capture_colour_id == 4;
 
     left_target_trials = ismember(behdata.target_bar, {'left'});
     right_target_trials = ismember(behdata.target_bar, {'right'});
@@ -128,6 +130,14 @@ for pp = pp2do
     congruency_er(p,1) = mean(behdata.absolute_difference(congruent_trials&oktrials));
     congruency_er(p,2) = mean(behdata.absolute_difference(neutral_trials&oktrials));
     congruency_er(p,3) = mean(behdata.absolute_difference(incongruent_trials&oktrials));
+    
+    neutral_labels = {"task neutral (3)", "no task neutral (4)"};
+
+    congruency_dt_neutrals(p,1) = mean(behdata.idle_reaction_time_in_ms(task_neutral_trials&oktrials));
+    congruency_dt_neutrals(p,2) = mean(behdata.idle_reaction_time_in_ms(notask_neutral_trials&oktrials));
+
+    congruency_er_neutrals(p,1) = mean(behdata.absolute_difference(task_neutral_trials&oktrials));
+    congruency_er_neutrals(p,2) = mean(behdata.absolute_difference(notask_neutral_trials&oktrials));
 
     pressed_labels = {"pressed", "unpressed"};
       
@@ -501,6 +511,29 @@ if plot_averages
     % add individuals
     plot([1:2], block_er_effect);
 
+    %% effect of each kind of neutral cue on behaviour
+    figure;
+    % decision time
+    subplot(1,2,1)
+    hold on 
+    b = bar(mean(congruency_dt_neutrals), 'FaceColor', colours(3,:), 'LineStyle', 'none');
+    errorbar([1:2], mean(congruency_dt_neutrals), std(congruency_dt_neutrals) ./ sqrt(p), 'LineStyle', 'none', 'Color', dark_colours(3,:), 'LineWidth', 1.5)
+    xticks([1,2]);
+    xticklabels(neutral_labels);
+    title(['dt as function of type of neutral cue']);
+    % add individuals
+    plot([1:2], congruency_dt_neutrals, 'Color', [0, 0, 0, 0.25]);
+    
+    % error
+    subplot(1,2,2)
+    hold on 
+    b = bar(mean(congruency_er_neutrals), 'FaceColor', colours(3,:), 'LineStyle', 'none');
+    errorbar([1:2], mean(congruency_er_neutrals), std(congruency_er_neutrals) ./ sqrt(p), 'LineStyle', 'none', 'Color', dark_colours(3,:), 'LineWidth', 1.5)
+    xticks([1,2]);
+    xticklabels(neutral_labels);
+    title(['error as function of type of neutral cue']);
+    % add individuals
+    plot([1:2], congruency_er_neutrals, 'Color', [0, 0, 0, 0.25]);
    
     %% main behavioural figure - pT
     % figure; 

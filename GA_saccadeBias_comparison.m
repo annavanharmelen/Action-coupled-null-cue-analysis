@@ -127,7 +127,7 @@ if plotFigures
     statcfg.xax = saccade.time;
     statcfg.npermutations = 10000;
     statcfg.clusterStatEvalaluationAlpha = 0.05;
-    statcfg.nsub = size(pp2do, 2);
+    statcfg.nsub = size(pp2do, 2); %TODO: THIS IS WRONG?
     statcfg.statMethod = 'montecarlo';
 
     timeframe = [951:2451]; %0 - 1500 ms post-cue
@@ -146,5 +146,97 @@ if plotFigures
 
     % print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_effect_of_action", "-dsvg")
     % print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_effect_of_action", "-dpng")
+
+    %% Interaction between microsaccade bias and RT (combined E1 and E4)
+    figure;
+    hold on;
+    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(1,:,12,:)), 'r', 'se'); % fast congruent
+    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(1,:,16,:)), 'b', 'se'); % slow congruent
+    p3 = frevede_errorbarplot(saccade.time, squeeze(d3(1,:,13,:)), 'r', 'se'); % fast incongruent
+    p4 = frevede_errorbarplot(saccade.time, squeeze(d3(1,:,17,:)), 'b', 'se'); % slow incongruent
+    legend([p1,p2,p3,p4], {'congruent fast', 'congruent slow', 'incongruent fast', 'incongruent slow'});
+    title('E1');
+    xlim(xlimtoplot);
+
+    figure;
+    hold on;
+    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(4,:,14,:)), 'r', 'se'); % fast congruent
+    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(4,:,18,:)), 'b', 'se'); % slow congruent
+    p3 = frevede_errorbarplot(saccade.time, squeeze(d3(4,:,15,:)), 'r', 'se'); % fast incongruent
+    p4 = frevede_errorbarplot(saccade.time, squeeze(d3(4,:,19,:)), 'b', 'se'); % slow incongruent
+    legend([p1,p2,p3,p4], {'congruent fast', 'congruent slow', 'incongruent fast', 'incongruent slow'});
+    title('E2');
+    xlim(xlimtoplot);
+
+    figure;
+    hold on;
+    p1 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,12,:));squeeze(d3(4,:,14,:))], 'r', 'se'); % fast congruent
+    p2 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,16,:));squeeze(d3(4,:,18,:))], 'b', 'se'); % slow congruent
+    p3 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,13,:));squeeze(d3(4,:,15,:))], 'm', 'se'); % fast incongruent
+    p4 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,17,:));squeeze(d3(4,:,19,:))], 'c', 'se'); % slow incongruent
+    legend([p1,p2,p3,p4], {'congruent fast', 'congruent slow', 'incongruent fast', 'incongruent slow'});
+    title('E1 + E2 combined');
+    xlim(xlimtoplot);
+
+    high_capture_data = [squeeze(d3(1,:,12,:));squeeze(d3(4,:,14,:));squeeze(d3(1,:,17,:));squeeze(d3(4,:,19,:))];
+    low_capture_data = [squeeze(d3(1,:,16,:));squeeze(d3(4,:,18,:));squeeze(d3(1,:,13,:));squeeze(d3(4,:,15,:))];
+    figure;
+    hold on;
+    p1 = frevede_errorbarplot(saccade.time, high_capture_data, 'r', 'se'); % fast congruent + slow incongruent
+    p2 = frevede_errorbarplot(saccade.time, low_capture_data, 'b', 'se'); % slow congruent + fast incongruent
+    legend([p1,p2], {'congruent fast + incongruent slow', 'congruent slow + incongruent fast'}, 'AutoUpdate','off');
+    title('E1 + E2 combined');
+    xlim(xlimtoplot);
+    % add stats
+    statcfg.xax = saccade.time;
+    statcfg.npermutations = 10000;
+    statcfg.clusterStatEvalaluationAlpha = 0.05;
+    statcfg.nsub = size(pp2do, 2) * 2;
+    statcfg.statMethod = 'montecarlo';
+
+    timeframe = [951:2451]; %0 - 1500 ms post-cue
+
+    stat_high_capture = frevede_ftclusterstat1D(statcfg, high_capture_data(:,timeframe), zeros(size(high_capture_data(:,timeframe))));
+    stat_low_capture = frevede_ftclusterstat1D(statcfg, low_capture_data(:,timeframe), zeros(size(low_capture_data(:,timeframe))));
+    stat_comp_capture = frevede_ftclusterstat1D(statcfg, high_capture_data(:,timeframe), low_capture_data(:,timeframe));
+
+    mask_high_cap = double(stat_high_capture.mask); mask_high_cap(mask_high_cap==0) = nan; % nan data that is not part of mark
+    mask_low_cap = double(stat_low_capture.mask); mask_low_cap(mask_low_cap==0) = nan;
+    mask_comp_cap = double(stat_comp_capture.mask); mask_comp_cap(mask_comp_cap==0) = nan;
+
+    sig1 = plot(saccade.time(timeframe), mask_high_cap*-0.16, 'r', 'LineWidth', 3);
+    sig2 = plot(saccade.time(timeframe), mask_low_cap*-0.165, 'b', 'LineWidth', 3);
+    sig3 = plot(saccade.time(timeframe), mask_comp_cap*-0.14, 'k', 'LineWidth', 6); %not significant, p=0.138 for first cluster (during peak)
+
+    fast_data = [squeeze(d3(1,:,12,:));squeeze(d3(4,:,14,:))]-[squeeze(d3(1,:,13,:));squeeze(d3(4,:,15,:))];
+    slow_data = [squeeze(d3(1,:,16,:));squeeze(d3(4,:,18,:))]-[squeeze(d3(1,:,17,:));squeeze(d3(4,:,19,:))];
+    figure;
+    % this one makes no sense no?
+    hold on;
+    p1 = frevede_errorbarplot(saccade.time, fast_data, 'r', 'se'); % fast congruent - fast incongruent
+    p2 = frevede_errorbarplot(saccade.time, slow_data, 'b', 'se'); % slow congruent - slow incongruent
+    legend([p1,p2], {'congruent fast - incongruent fast', 'congruent slow - incongruent slow'}, 'AutoUpdate','off');
+    title('E1 + E2 combined');
+    xlim(xlimtoplot);
+    % add stats
+    statcfg.xax = saccade.time;
+    statcfg.npermutations = 10000;
+    statcfg.clusterStatEvalaluationAlpha = 0.05;
+    statcfg.nsub = size(pp2do, 2) * 2;
+    statcfg.statMethod = 'montecarlo';
+
+    timeframe = [951:2451]; %0 - 1500 ms post-cue
+
+    stat_fast = frevede_ftclusterstat1D(statcfg, fast_data(:,timeframe), zeros(size(fast_data(:,timeframe))));
+    stat_slow = frevede_ftclusterstat1D(statcfg, slow_data(:,timeframe), zeros(size(slow_data(:,timeframe))));
+    stat_comp_speed = frevede_ftclusterstat1D(statcfg, fast_data(:,timeframe), slow_data(:,timeframe));
+
+    mask_fast = double(stat_fast.mask); mask_fast(mask_fast==0) = nan; % nan data that is not part of mark
+    mask_slow = double(stat_slow.mask); mask_slow(mask_slow==0) = nan;
+    mask_comp_speed = double(stat_comp_speed.mask); mask_comp_speed(mask_comp_speed==0) = nan;
+
+    sig1 = plot(saccade.time(timeframe), mask_fast*-0.16, 'r', 'LineWidth', 3);
+    sig2 = plot(saccade.time(timeframe), mask_slow*-0.165, 'b', 'LineWidth', 3);
+    sig3 = plot(saccade.time(timeframe), mask_comp_speed*-0.14, 'k', 'LineWidth', 6); %not significant, p=0.138 for first cluster (during peak)
 
 end

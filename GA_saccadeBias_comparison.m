@@ -180,13 +180,23 @@ if plotFigures
     title('E1 + E2 combined');
     xlim(xlimtoplot);
 
-    high_capture_data = [squeeze(d3(1,:,12,:));squeeze(d3(4,:,14,:));squeeze(d3(1,:,17,:));squeeze(d3(4,:,19,:))];
-    low_capture_data = [squeeze(d3(1,:,16,:));squeeze(d3(4,:,18,:));squeeze(d3(1,:,13,:));squeeze(d3(4,:,15,:))];
     figure;
     hold on;
-    p1 = frevede_errorbarplot(saccade.time, high_capture_data, 'r', 'se'); % fast congruent + slow incongruent
-    p2 = frevede_errorbarplot(saccade.time, low_capture_data, 'b', 'se'); % slow congruent + fast incongruent
-    legend([p1,p2], {'congruent fast + incongruent slow', 'congruent slow + incongruent fast'}, 'AutoUpdate','off');
+    p1 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,14,:));squeeze(d3(4,:,16,:))], 'r', 'se'); % fast congruent
+    p2 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,18,:));squeeze(d3(4,:,20,:))], 'b', 'se'); % slow congruent
+    p3 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,15,:));squeeze(d3(4,:,17,:))], 'm', 'se'); % fast incongruent
+    p4 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,19,:));squeeze(d3(4,:,21,:))], 'c', 'se'); % slow incongruent
+    legend([p1,p2,p3,p4], {'congruent fast', 'congruent slow', 'incongruent fast', 'incongruent slow'});
+    title('E1 + E2 combined (ERROR)');
+    xlim(xlimtoplot);
+
+    congruent_data = [squeeze(d3(1,:,12,:));squeeze(d3(4,:,14,:))]-[squeeze(d3(1,:,16,:));squeeze(d3(4,:,18,:))];
+    incongruent_data = [squeeze(d3(1,:,13,:));squeeze(d3(4,:,15,:))]-[squeeze(d3(1,:,17,:));squeeze(d3(4,:,19,:))];
+    figure;
+    hold on;
+    p1 = frevede_errorbarplot(saccade.time, congruent_data, 'r', 'se'); % fast congruent - slow congruent
+    p2 = frevede_errorbarplot(saccade.time, incongruent_data, 'b', 'se'); % fast incongruent - slow incongruent
+    legend([p1,p2], {'congruent fast - slow', 'incongruent fast - slow'}, 'AutoUpdate','off');
     title('E1 + E2 combined');
     xlim(xlimtoplot);
     % add stats
@@ -198,17 +208,17 @@ if plotFigures
 
     timeframe = [951:2451]; %0 - 1500 ms post-cue
 
-    stat_high_capture = frevede_ftclusterstat1D(statcfg, high_capture_data(:,timeframe), zeros(size(high_capture_data(:,timeframe))));
-    stat_low_capture = frevede_ftclusterstat1D(statcfg, low_capture_data(:,timeframe), zeros(size(low_capture_data(:,timeframe))));
-    stat_comp_capture = frevede_ftclusterstat1D(statcfg, high_capture_data(:,timeframe), low_capture_data(:,timeframe));
+    stat_cong = frevede_ftclusterstat1D(statcfg, congruent_data(:,timeframe), zeros(size(congruent_data(:,timeframe))));
+    stat_incong = frevede_ftclusterstat1D(statcfg, incongruent_data(:,timeframe), zeros(size(incongruent_data(:,timeframe))));
+    stat_comp_cong = frevede_ftclusterstat1D(statcfg, congruent_data(:,timeframe), incongruent_data(:,timeframe));
 
-    mask_high_cap = double(stat_high_capture.mask); mask_high_cap(mask_high_cap==0) = nan; % nan data that is not part of mark
-    mask_low_cap = double(stat_low_capture.mask); mask_low_cap(mask_low_cap==0) = nan;
-    mask_comp_cap = double(stat_comp_capture.mask); mask_comp_cap(mask_comp_cap==0) = nan;
+    mask_cong = double(stat_cong.mask); mask_cong(mask_cong==0) = nan; % nan data that is not part of mark
+    mask_incong = double(stat_incong.mask); mask_incong(mask_incong==0) = nan;
+    mask_comp_cong = double(stat_comp_cong.mask); mask_comp_cong(mask_comp_cong==0) = nan;
 
-    sig1 = plot(saccade.time(timeframe), mask_high_cap*-0.16, 'r', 'LineWidth', 3);
-    sig2 = plot(saccade.time(timeframe), mask_low_cap*-0.165, 'b', 'LineWidth', 3);
-    sig3 = plot(saccade.time(timeframe), mask_comp_cap*-0.14, 'k', 'LineWidth', 6); %not significant, p=0.138 for first cluster (during peak)
+    sig1 = plot(saccade.time(timeframe), mask_cong*-0.16, 'r', 'LineWidth', 3);
+    sig2 = plot(saccade.time(timeframe), mask_incong*-0.165, 'b', 'LineWidth', 3);
+    sig3 = plot(saccade.time(timeframe), mask_comp_cong*-0.14, 'k', 'LineWidth', 6); %not significant, p=0.138 for first cluster (during peak)
 
     fast_data = [squeeze(d3(1,:,12,:));squeeze(d3(4,:,14,:))]-[squeeze(d3(1,:,13,:));squeeze(d3(4,:,15,:))];
     slow_data = [squeeze(d3(1,:,16,:));squeeze(d3(4,:,18,:))]-[squeeze(d3(1,:,17,:));squeeze(d3(4,:,19,:))];

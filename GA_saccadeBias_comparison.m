@@ -116,7 +116,7 @@ if plotFigures
     yticks([-0.2 0 0.2 0.4]);
     ylabel('Saccade bias (ΔHz)');
     xlabel('Time after cue (ms)');
-    legend([p1, p2], {'cue action required', 'no action required'}, 'EdgeColor', 'none', 'AutoUpdate','off', 'FontSize', 25.4);
+    legend([p1, p2], {'must engange with cue', 'can disregard cue'}, 'EdgeColor', 'none', 'AutoUpdate','off', 'FontSize', 25.4);
     set(gca(), 'FontSize', [25.4]);
     set(gca(), 'FontName', 'Aptos');
     set(gca(), 'Box', 'on');

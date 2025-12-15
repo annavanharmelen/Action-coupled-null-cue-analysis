@@ -127,22 +127,24 @@ if plotFigures
     statcfg.xax = saccade.time;
     statcfg.npermutations = 10000;
     statcfg.clusterStatEvalaluationAlpha = 0.05;
-    statcfg.nsub = size(pp2do, 2); %TODO: THIS IS WRONG?
+    statcfg.nsub = 50; %for within pp
+    statcfg.nsub1 = 50; %for between pp
+    statcfg.nsub2 = 50; %for between pp
     statcfg.statMethod = 'montecarlo';
 
     timeframe = [951:2451]; %0 - 1500 ms post-cue
 
     stat_action = frevede_ftclusterstat1D(statcfg, action_data(:,timeframe), zeros(size(action_data(:,timeframe))));
     stat_no_action = frevede_ftclusterstat1D(statcfg, no_action_data(:,timeframe), zeros(size(no_action_data(:,timeframe))));
-    stat_compare = frevede_ftclusterstat1D(statcfg, action_data(:,timeframe), no_action_data(:,timeframe));
+    stat_compare = frevede_ftclusterstat1D_indep(statcfg, action_data(:,timeframe), no_action_data(:,timeframe));
 
     mask_action = double(stat_action.mask); mask_action(mask_action==0) = nan; % nan data that is not part of mark
     mask_no_action = double(stat_no_action.mask); mask_no_action(mask_no_action==0) = nan;
     mask_compare = double(stat_compare.mask); mask_compare(mask_compare==0) = nan;
 
-    % sig1 = plot(saccade.time(timeframe), mask_action*-0.16, 'Color', get_colour("pink",""), 'LineWidth', 3); %shown already in first figure
-    % sig2 = plot(saccade.time(timeframe), mask_no_action*-0.165, 'Color', [0.5,0.5,0.5], 'LineWidth', 3); % not significant
-    sig3 = plot(saccade.time(timeframe), mask_compare*-0.14, 'Color', 'k', 'LineWidth', 6);
+    sig1 = plot(saccade.time(timeframe), mask_action*-0.16, 'Color', get_colour("pink",""), 'LineWidth', 4); %shown already in first figure
+    sig2 = plot(saccade.time(timeframe), mask_no_action*-0.15, 'Color', [0.5,0.5,0.5], 'LineWidth', 4); % not significant
+    sig3 = plot(saccade.time(timeframe), mask_compare*-0.14, 'Color', 'k', 'LineWidth', 4);
 
     % print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_effect_of_action", "-dsvg")
     % print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_effect_of_action", "-dpng")

@@ -2,7 +2,7 @@ function param = getAllSubjParam(study, pp)
 
 %% set path and pp-specific file locations, dependent on study
 if study == 1
-    unique_numbers = [25,44,43,24,59,13,14,63,37,21,62,64,42,71,35,89,61,97,26,78,91,47,70,94,88,46]; %needs to be in the right order
+    unique_numbers = [25, 44, 43, 24, 59, 13, 14, 63, 37, 21, 62, 64, 42, 71, 35, 89, 61, 97, 26, 78, 91, 47, 70, 94, 88, 46]; %needs to be in the right order
     param.path = '\\scistor.vu.nl\shares\FGB-ETP-CogPsy-ProactiveBrainLab\core_lab_members\Anna\Data\vidi5 - action-coupled-null-cue\';
 
 elseif study == 2

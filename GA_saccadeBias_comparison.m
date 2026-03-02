@@ -4,7 +4,12 @@
 clear; clc; close all;
     
 %% parameters
-pp2do           = [[1:9,11:26];[1:8, 10:16, 18:27];[1:25];[3:10,12:17,19:23,25:30]];
+% pp2do = [Experiment 1, Experiment 2, Experiment 3, Experiment 4];
+% where study 1 = action-coupled
+% study 2 = action-coupled + extra neutral
+% study 3 =  original location-by-colour (colour only data)
+% study 4 = new location-by-colour (colour only data)
+pp2do           = [setdiff([1:26], 10); setdiff([3:30], [11, 18, 24]); setdiff([1:27], [9, 17]); [1:25]];
 
 oneOrTwoD       = 1;        oneOrTwoD_options = {'_1D','_2D'};
 nsmooth         = 200;
@@ -60,7 +65,7 @@ for s = [1:4]
         if s == 1
             avg_saccade_effect(1,p,s) = mean(saccade.effect(5,saccade.time>=200 & saccade.time<=600));
             avg_saccade_effect(2,p,s) = mean(saccade.effect(5,:));
-        elseif s == 4
+        elseif s == 2
             avg_saccade_effect(1,p,s) = mean(saccade.effect(7,saccade.time>=200 & saccade.time<=600));
             avg_saccade_effect(2,p,s) = mean(saccade.effect(7,:));
         else
@@ -72,7 +77,7 @@ for s = [1:4]
         if s == 1
             max_saccade_effect(1,p,s) = max(saccade.effect(5,saccade.time>=200 & saccade.time<=600));
             max_saccade_effect(2,p,s) = max(saccade.effect(5,:));
-        elseif s == 4
+        elseif s == 2
             max_saccade_effect(1,p,s) = max(saccade.effect(7,saccade.time>=200 & saccade.time<=600));
             max_saccade_effect(2,p,s) = max(saccade.effect(7,:));
         else
@@ -93,15 +98,15 @@ if plotFigures
     figure;
     hold on
     p1 = frevede_errorbarplot(saccade.time, squeeze(d3(1,:,5,:)), [1,0,0], 'se');
-    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(2,:,4,:)), [0,0,1], 'se');
+    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(2,:,7,:)), [0,0,1], 'se');
     p3 = frevede_errorbarplot(saccade.time, squeeze(d3(3,:,4,:)), [0,1,1], 'se');
-    p4 = frevede_errorbarplot(saccade.time, squeeze(d3(4,:,7,:)), [1,0,1], 'se');
+    p4 = frevede_errorbarplot(saccade.time, squeeze(d3(4,:,4,:)), [1,0,1], 'se');
     xlim(xlimtoplot);
     legend([p1, p2, p3, p4], {'study 1', 'study 2', 'study 3', 'study 4'}, 'EdgeColor', 'none', 'AutoUpdate','off', 'FontSize', 25.4);
 
     %% Effect of having a secondary task for the cue
-    action_data = [squeeze(d3(1,:,5,:)); squeeze(d3(4,:,7,:))];
-    no_action_data = [squeeze(d3(2,:,4,:)); squeeze(d3(3,:,4,:))];
+    action_data = [squeeze(d3(1,:,5,:)); squeeze(d3(2,:,7,:))];
+    no_action_data = [squeeze(d3(3,:,4,:)); squeeze(d3(4,:,4,:))];
 
     figure;
     hold on
@@ -149,7 +154,7 @@ if plotFigures
     % print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_effect_of_action", "-dsvg")
     % print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_effect_of_action", "-dpng")
 
-    %% Interaction between microsaccade bias and RT (combined E1 and E4)
+    %% Interaction between microsaccade bias and RT (combined E1 and E2)
     figure;
     hold on;
     p1 = frevede_errorbarplot(saccade.time, squeeze(d3(1,:,12,:)), 'r', 'se'); % fast congruent
@@ -162,36 +167,36 @@ if plotFigures
 
     figure;
     hold on;
-    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(4,:,14,:)), 'r', 'se'); % fast congruent
-    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(4,:,18,:)), 'b', 'se'); % slow congruent
-    p3 = frevede_errorbarplot(saccade.time, squeeze(d3(4,:,15,:)), 'r', 'se'); % fast incongruent
-    p4 = frevede_errorbarplot(saccade.time, squeeze(d3(4,:,19,:)), 'b', 'se'); % slow incongruent
+    p1 = frevede_errorbarplot(saccade.time, squeeze(d3(2,:,14,:)), 'r', 'se'); % fast congruent
+    p2 = frevede_errorbarplot(saccade.time, squeeze(d3(2,:,18,:)), 'b', 'se'); % slow congruent
+    p3 = frevede_errorbarplot(saccade.time, squeeze(d3(2,:,15,:)), 'r', 'se'); % fast incongruent
+    p4 = frevede_errorbarplot(saccade.time, squeeze(d3(2,:,19,:)), 'b', 'se'); % slow incongruent
     legend([p1,p2,p3,p4], {'congruent fast', 'congruent slow', 'incongruent fast', 'incongruent slow'});
     title('E2');
     xlim(xlimtoplot);
 
     figure;
     hold on;
-    p1 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,12,:));squeeze(d3(4,:,14,:))], 'r', 'se'); % fast congruent
-    p2 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,16,:));squeeze(d3(4,:,18,:))], 'b', 'se'); % slow congruent
-    p3 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,13,:));squeeze(d3(4,:,15,:))], 'm', 'se'); % fast incongruent
-    p4 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,17,:));squeeze(d3(4,:,19,:))], 'c', 'se'); % slow incongruent
+    p1 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,12,:));squeeze(d3(2,:,14,:))], 'r', 'se'); % fast congruent
+    p2 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,16,:));squeeze(d3(2,:,18,:))], 'b', 'se'); % slow congruent
+    p3 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,13,:));squeeze(d3(2,:,15,:))], 'm', 'se'); % fast incongruent
+    p4 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,17,:));squeeze(d3(2,:,19,:))], 'c', 'se'); % slow incongruent
     legend([p1,p2,p3,p4], {'congruent fast', 'congruent slow', 'incongruent fast', 'incongruent slow'});
     title('E1 + E2 combined');
     xlim(xlimtoplot);
 
     figure;
     hold on;
-    p1 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,14,:));squeeze(d3(4,:,16,:))], 'r', 'se'); % fast congruent
-    p2 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,18,:));squeeze(d3(4,:,20,:))], 'b', 'se'); % slow congruent
-    p3 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,15,:));squeeze(d3(4,:,17,:))], 'm', 'se'); % fast incongruent
-    p4 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,19,:));squeeze(d3(4,:,21,:))], 'c', 'se'); % slow incongruent
+    p1 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,14,:));squeeze(d3(2,:,16,:))], 'r', 'se'); % fast congruent
+    p2 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,18,:));squeeze(d3(2,:,20,:))], 'b', 'se'); % slow congruent
+    p3 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,15,:));squeeze(d3(2,:,17,:))], 'm', 'se'); % fast incongruent
+    p4 = frevede_errorbarplot(saccade.time, [squeeze(d3(1,:,19,:));squeeze(d3(2,:,21,:))], 'c', 'se'); % slow incongruent
     legend([p1,p2,p3,p4], {'congruent fast', 'congruent slow', 'incongruent fast', 'incongruent slow'});
     title('E1 + E2 combined (ERROR)');
     xlim(xlimtoplot);
 
-    congruent_data = [squeeze(d3(1,:,12,:));squeeze(d3(4,:,14,:))]-[squeeze(d3(1,:,16,:));squeeze(d3(4,:,18,:))];
-    incongruent_data = [squeeze(d3(1,:,13,:));squeeze(d3(4,:,15,:))]-[squeeze(d3(1,:,17,:));squeeze(d3(4,:,19,:))];
+    congruent_data = [squeeze(d3(1,:,12,:));squeeze(d3(2,:,14,:))]-[squeeze(d3(1,:,16,:));squeeze(d3(2,:,18,:))];
+    incongruent_data = [squeeze(d3(1,:,13,:));squeeze(d3(2,:,15,:))]-[squeeze(d3(1,:,17,:));squeeze(d3(2,:,19,:))];
     figure;
     hold on;
     p1 = frevede_errorbarplot(saccade.time, congruent_data, 'r', 'se'); % fast congruent - slow congruent
@@ -220,8 +225,8 @@ if plotFigures
     sig2 = plot(saccade.time(timeframe), mask_incong*-0.165, 'b', 'LineWidth', 3);
     sig3 = plot(saccade.time(timeframe), mask_comp_cong*-0.14, 'k', 'LineWidth', 6); %not significant, p=0.138 for first cluster (during peak)
 
-    fast_data = [squeeze(d3(1,:,12,:));squeeze(d3(4,:,14,:))]-[squeeze(d3(1,:,13,:));squeeze(d3(4,:,15,:))];
-    slow_data = [squeeze(d3(1,:,16,:));squeeze(d3(4,:,18,:))]-[squeeze(d3(1,:,17,:));squeeze(d3(4,:,19,:))];
+    fast_data = [squeeze(d3(1,:,12,:));squeeze(d3(2,:,14,:))]-[squeeze(d3(1,:,13,:));squeeze(d3(2,:,15,:))];
+    slow_data = [squeeze(d3(1,:,16,:));squeeze(d3(2,:,18,:))]-[squeeze(d3(1,:,17,:));squeeze(d3(2,:,19,:))];
     figure;
     % this one makes no sense no?
     hold on;

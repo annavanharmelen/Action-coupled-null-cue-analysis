@@ -8,7 +8,12 @@ display_percentageok = 1;
 plot_individuals = 0;
 plot_averages = 0;
 
-pp2do = [[1:9,11:26];[1:8, 10:16, 18:27];[1:25];[3:10,12:17,19:23,25:30]];
+% pp2do = [Experiment 1, Experiment 2, Experiment 3, Experiment 4];
+% where study 1 = action-coupled
+% study 2 = action-coupled + extra neutral
+% study 3 =  original location-by-colour (colour only data)
+% study 4 = new location-by-colour (colour only data)
+pp2do = [setdiff([1:26], 10); setdiff([3:30], [11, 18, 24]); setdiff([1:27], [9, 17]); [1:25]];
 
 %% load and aggregate the data from each study
 congruency_labels = {"match", "match", "match", };
@@ -32,7 +37,7 @@ for s = [1:4]
         behdata.signed_difference(behdata.signed_difference<-90) = behdata.signed_difference(behdata.signed_difference<-90)+180;
         
         % check ok trials, just based on decision time, because this one is unlimited.
-        oktrials = abs(zscore(behdata.idle_reaction_time_in_ms))<=3; 
+        oktrials = abs(zscore(behdata.idle_reaction_time_in_ms))<=3;
         percentageok(s,p) = mean(oktrials)*100;
 
         %display percentage ok
@@ -45,12 +50,15 @@ for s = [1:4]
         congruent_trials = ismember(behdata.trial_condition, {'congruent'});
         incongruent_trials = ismember(behdata.trial_condition, {'incongruent'});
         
-        if s == 1 || s == 4
+        if s < 3
             neutral_trials = ismember(behdata.trial_condition, {'neutral'});
         else
             cc_trials = ismember(behdata.block_type, {'colour_probe'})&ismember(behdata.cue_form, {'colour_cue'});
             oktrials = oktrials&cc_trials;
         end
+
+        % save number of trials that are eventually used per pp
+        n_trials(p,s) = sum(oktrials);
    
         % extract data of interest
         overall_dt(s,p) = mean(behdata.idle_reaction_time_in_ms(oktrials));
@@ -63,7 +71,7 @@ for s = [1:4]
         congruency_er(s,p,1) = mean(behdata.absolute_difference(congruent_trials&oktrials));
         congruency_er(s,p,2) = mean(behdata.absolute_difference(incongruent_trials&oktrials));
         
-        if s == 1 || s == 4
+        if s < 3
             congruency_dt(s,p,3) = mean(behdata.idle_reaction_time_in_ms(neutral_trials&oktrials));
             congruency_er(s,p,3) = mean(behdata.absolute_difference(neutral_trials&oktrials));
         end
@@ -105,21 +113,21 @@ plot([1:3], squeeze(congruency_er(1,:,1:3)), 'Color', [0, 0, 0, 0.25]);
 % study 2
 subplot(4,2,3)
 hold on 
-b = bar(mean(squeeze(congruency_dt(2,:,1:2))));
-errorbar([1:2], mean(squeeze(congruency_dt(2,:,1:2))), std(squeeze(congruency_dt(2,:,1:2))) ./ sqrt(size(pp2do(2,:), 2)), 'LineStyle', 'none', 'LineWidth', 1.5)
-xticks([1,2]);
+b = bar(mean(squeeze(congruency_dt(2,:,1:3))));
+errorbar([1:3], mean(squeeze(congruency_dt(2,:,1:3))), std(squeeze(congruency_dt(2,:,1:3))) ./ sqrt(size(pp2do(2,:), 2)), 'LineStyle', 'none', 'LineWidth', 1.5)
+xticks([1,2,3]);
 xticklabels(congruency_labels);
 % add individuals
-plot([1:2], squeeze(congruency_dt(2,:,1:2)), 'Color', [0, 0, 0, 0.25]);
+plot([1:3], squeeze(congruency_dt(2,:,1:3)), 'Color', [0, 0, 0, 0.25]);
 
 subplot(4,2,4)
 hold on 
-b = bar(mean(squeeze(congruency_er(2,:,1:2))));
-errorbar([1:2], mean(squeeze(congruency_er(2,:,1:2))), std(squeeze(congruency_er(2,:,1:2))) ./ sqrt(size(pp2do(2,:), 2)), 'LineStyle', 'none', 'LineWidth', 1.5)
-xticks([1,2]);
+b = bar(mean(squeeze(congruency_er(2,:,1:3))));
+errorbar([1:3], mean(squeeze(congruency_er(2,:,1:3))), std(squeeze(congruency_er(2,:,1:3))) ./ sqrt(size(pp2do(2,:), 2)), 'LineStyle', 'none', 'LineWidth', 1.5)
+xticks([1,2,3]);
 xticklabels(congruency_labels);
 % add individuals
-plot([1:2], squeeze(congruency_er(2,:,1:2)), 'Color', [0, 0, 0, 0.25]);
+plot([1:3], squeeze(congruency_er(2,:,1:3)), 'Color', [0, 0, 0, 0.25]);
 
 % study 3
 subplot(4,2,5)
@@ -140,26 +148,26 @@ xticklabels(congruency_labels);
 % add individuals
 plot([1:2], squeeze(congruency_er(3,:,1:2)), 'Color', [0, 0, 0, 0.25]);
 
-% study 1
+% study 4
 subplot(4,2,7)
 hold on 
-b = bar(mean(squeeze(congruency_dt(4,:,1:3))));
-errorbar([1:3], mean(squeeze(congruency_dt(4,:,1:3))), std(squeeze(congruency_dt(4,:,1:3))) ./ sqrt(size(pp2do(1,:), 2)), 'LineStyle', 'none', 'LineWidth', 1.5)
-xticks([1,2,3]);
+b = bar(mean(squeeze(congruency_dt(4,:,1:2))));
+errorbar([1:2], mean(squeeze(congruency_dt(4,:,1:2))), std(squeeze(congruency_dt(4,:,1:2))) ./ sqrt(size(pp2do(4,:), 2)), 'LineStyle', 'none', 'LineWidth', 1.5)
+xticks([1,2]);
 xticklabels(congruency_labels);
 title(['dt as function of congruency']);
 % add individuals
-plot([1:3], squeeze(congruency_dt(4,:,1:3)), 'Color', [0, 0, 0, 0.25]);
+plot([1:2], squeeze(congruency_dt(4,:,1:2)), 'Color', [0, 0, 0, 0.25]);
 
 subplot(4,2,8)
 hold on 
-b = bar(mean(squeeze(congruency_er(4,:,1:3))));
-errorbar([1:3], mean(squeeze(congruency_er(4,:,1:3))), std(squeeze(congruency_er(4,:,1:3))) ./ sqrt(size(pp2do(1,:), 2)), 'LineStyle', 'none', 'LineWidth', 1.5)
-xticks([1,2,3]);
+b = bar(mean(squeeze(congruency_er(4,:,1:2))));
+errorbar([1:2], mean(squeeze(congruency_er(4,:,1:2))), std(squeeze(congruency_er(4,:,1:2))) ./ sqrt(size(pp2do(4,:), 2)), 'LineStyle', 'none', 'LineWidth', 1.5)
+xticks([1,2]);
 xticklabels(congruency_labels);
 title(['er as function of congruency']);
 % add individuals
-plot([1:3], squeeze(congruency_er(4,:,1:3)), 'Color', [0, 0, 0, 0.25]);
+plot([1:2], squeeze(congruency_er(4,:,1:2)), 'Color', [0, 0, 0, 0.25]);
 
 
 %% plot congruency effects between studies
@@ -169,7 +177,7 @@ subplot(2,2,1)
 hold on
 b = bar(mean(con_dt_effect));
 errorbar([1:4], mean(con_dt_effect), std(con_dt_effect) ./ sqrt(size(pp2do,2)), 'LineWidth', 1.5);
-xticks([1,2,3]);
+xticks([1,2,3,4]);
 xticklabels({"Study 1", "Study 2", "Study 3", "Study 4"});
 title('dt congruency effect')
 
@@ -177,20 +185,20 @@ subplot(2,2,2)
 hold on
 b = bar(mean(con_er_effect));
 errorbar([1:4], mean(con_er_effect), std(con_er_effect) ./ sqrt(size(pp2do,2)), 'LineWidth', 1.5);
-xticks([1,2,3]);
-xticklabels({"Study 1", "Study 2", "Study 3"});
+xticks([1,2,3,4]);
+xticklabels({"Study 1", "Study 2", "Study 3", "Study 4"});
 title('er congruency effect')
 
 % scatter with individuals
 subplot(2,2,3)
 scatter([ones(25,1), ones(25,1)*2, ones(25,1)*3, ones(25,1)*4], con_dt_effect);
-xlimit([0, 4]);
+xlim([0, 4]);
 xticks([1,2,3,4]);
 xticklabels({"Study 1", "Study 2", "Study 3", "Study 4"});
 
 subplot(2,2,4)
 scatter([ones(25,1), ones(25,1)*2, ones(25,1)*3, ones(25,1)*4], con_er_effect);
-xlimit([0, 4])
+xlim([0, 4]);
 xticks([1,2,3,4]);
 xticklabels({"Study 1", "Study 2", "Study 3", "Study 4"});
 
@@ -207,9 +215,9 @@ figure;
 subplot(1,2,1)
 hold on
 scatter(squeeze(avg_saccade_effect(1,:,1)), con_dt_effect(:,1), marker="diamond", markerFaceColor=get_colour("pink",""), MarkerEdgeColor='none');
-scatter(squeeze(avg_saccade_effect(1,:,2)), con_dt_effect(:,2), marker="diamond", markerFaceColor=[0.5, 0.5, 0.5], MarkerEdgeColor='none');
-scatter(squeeze(avg_saccade_effect(1,:,3)), con_dt_effect(:,3), marker="o", markerFaceColor=[0.5, 0.5, 0.5], MarkerEdgeColor='none');
-scatter(squeeze(avg_saccade_effect(1,:,4)), con_dt_effect(:,4), marker="o", markerFaceColor=get_colour("pink",""), MarkerEdgeColor='none');
+scatter(squeeze(avg_saccade_effect(1,:,2)), con_dt_effect(:,2), marker="o", markerFaceColor=get_colour("pink",""), MarkerEdgeColor='none');
+scatter(squeeze(avg_saccade_effect(1,:,3)), con_dt_effect(:,3), marker="diamond", markerFaceColor=[0.5, 0.5, 0.5], MarkerEdgeColor='none');
+scatter(squeeze(avg_saccade_effect(1,:,4)), con_dt_effect(:,4), marker="o", markerFaceColor=[0.5, 0.5, 0.5], MarkerEdgeColor='none');
 ylabel('congruency effect of DECISION TIME');
 xlabel('congruency effect of SACCADE BIAS');
 title('DT effect x saccade bias');
@@ -226,9 +234,9 @@ legend({"Study 1", "Study 2", "Study 3", "Study 4"});
 subplot(1,2,2)
 hold on
 scatter(squeeze(avg_saccade_effect(1,:,1)), con_er_effect(:,1), marker="diamond", markerFaceColor=get_colour("pink",""), MarkerEdgeColor='none');
-scatter(squeeze(avg_saccade_effect(1,:,2)), con_er_effect(:,2), marker="diamond", markerFaceColor=[0.5, 0.5, 0.5], MarkerEdgeColor='none');
-scatter(squeeze(avg_saccade_effect(1,:,3)), con_er_effect(:,3), marker="o", markerFaceColor=[0.5, 0.5, 0.5], MarkerEdgeColor='none');
-scatter(squeeze(avg_saccade_effect(1,:,4)), con_er_effect(:,4), marker="o", markerFaceColor=get_colour("pink",""), MarkerEdgeColor='none');
+scatter(squeeze(avg_saccade_effect(1,:,2)), con_er_effect(:,2), marker="o", markerFaceColor=get_colour("pink",""), MarkerEdgeColor='none');
+scatter(squeeze(avg_saccade_effect(1,:,3)), con_er_effect(:,3), marker="diamond", markerFaceColor=[0.5, 0.5, 0.5], MarkerEdgeColor='none');
+scatter(squeeze(avg_saccade_effect(1,:,4)), con_er_effect(:,4), marker="o", markerFaceColor=[0.5, 0.5, 0.5], MarkerEdgeColor='none');
 ylabel('congruency effect of ERROR');
 xlabel('congruency effect of SACCADE BIAS');
 title('Error effect x saccade bias');
@@ -288,51 +296,51 @@ end
 figure;
 subplot(1,2,1)
 hold on
-scatter(reshape(con_dt_effect(:,[1,4]), [50,1]), reshape(squeeze(avg_saccade_effect(1,:,[1,4])), [50,1]));
-scatter(reshape(con_dt_effect(:,2:3), [50,1]), reshape(squeeze(avg_saccade_effect(1,:,2:3)), [50,1]));
+scatter(reshape(con_dt_effect(:,1:2), [50,1]), reshape(squeeze(avg_saccade_effect(1,:,1:2)), [50,1]));
+scatter(reshape(con_dt_effect(:,3:4), [50,1]), reshape(squeeze(avg_saccade_effect(1,:,3:4)), [50,1]));
 xlabel('congruency effect of DECISION TIME');
 ylabel('congruency effect of SACCADE BIAS');
 title('DT effect x saccade bias');
 h = lsline();
 set(h(1),'color',[17,113,190]/255);
 set(h(2),'color',[221,84,0]/255);
-legend({"Study 1 + 4", "Study 2 + 3"});
+legend({"Study 1 + 2", "Study 3 + 4"});
 
 subplot(1,2,2)
 hold on
-scatter(reshape(con_er_effect(:,[1,4]), [50,1]), reshape(squeeze(avg_saccade_effect(1,:,[1,4])), [50,1]));
-scatter(reshape(con_er_effect(:,2:3), [50,1]), reshape(squeeze(avg_saccade_effect(1,:,2:3)), [50,1]));
+scatter(reshape(con_er_effect(:,1:2), [50,1]), reshape(squeeze(avg_saccade_effect(1,:,1:2)), [50,1]));
+scatter(reshape(con_er_effect(:,3:4), [50,1]), reshape(squeeze(avg_saccade_effect(1,:,3:4)), [50,1]));
 xlabel('congruency effect of DECISION TIME');
 ylabel('congruency effect of SACCADE BIAS');
 title('ER effect x saccade bias');
 h = lsline();
 set(h(2),'color',[17,113,190]/255);
 set(h(1),'color',[221,84,0]/255);
-legend({"Study 1 + 4", "Study 2 + 3"});
+legend({"Study 1 + 2", "Study 3 + 4"});
 
-[r,pval] = corr(con_dt_effect(:,1), squeeze(avg_saccade_effect(1,:,1))');
+[r,pval] = corr(reshape(con_dt_effect(:,1:2), [50,1]), reshape(squeeze(avg_saccade_effect(1,:,1:2)), [50,1]));
 if pval <= 0.05
-    disp('study 1 has corr for dt');
+    disp('study 1-2 has corr for dt');
     disp(['r= ', num2str(r), 'p= ', num2str(pval)]);
 end
-[r,pval] = corr(reshape(con_dt_effect(:,2:3), [50,1]), reshape(squeeze(avg_saccade_effect(1,:,2:3)), [50,1]));
+[r,pval] = corr(reshape(con_dt_effect(:,3:4), [50,1]), reshape(squeeze(avg_saccade_effect(1,:,3:4)), [50,1]));
 if pval <= 0.05
-    disp('study 2/3 has corr for dt');
-    disp(['r= ', num2str(r), 'p= ', num2str(pval)]);
-end
-
-[r,pval] = corr(con_er_effect(:,1), squeeze(avg_saccade_effect(1,:,1))');
-if pval <= 0.05
-    disp('study 1 has corr for er');
-    disp(['r= ', num2str(r), 'p= ', num2str(pval)]);
-end
-[r,pval] = corr(reshape(con_dt_effect(:,2:3), [50,1]), reshape(squeeze(avg_saccade_effect(1,:,2:3)), [50,1]));
-if pval <= 0.05
-    disp('study 2/3 has corr for er');
+    disp('study 3-4 has corr for dt');
     disp(['r= ', num2str(r), 'p= ', num2str(pval)]);
 end
 
-%% main figure for poster?
+[r,pval] = corr(reshape(con_dt_effect(:,1:2), [50,1]), reshape(squeeze(avg_saccade_effect(1,:,1:2)), [50,1]));
+if pval <= 0.05
+    disp('study 1-2 has corr for er');
+    disp(['r= ', num2str(r), 'p= ', num2str(pval)]);
+end
+[r,pval] = corr(reshape(con_dt_effect(:,3:4), [50,1]), reshape(squeeze(avg_saccade_effect(1,:,3:4)), [50,1]));
+if pval <= 0.05
+    disp('study 3-4 has corr for er');
+    disp(['r= ', num2str(r), 'p= ', num2str(pval)]);
+end
+
+%% figure 3 for poster
 dt_ylim = [200 1400];
 dt_yticks = [200, 600, 1000, 1400];
 er_ylim = [5 35];
@@ -344,11 +352,11 @@ bar_width = 0.64;
 figure;
 tL = subplot(2,3,1);
 hold on 
-b = bar(mean(squeeze(mean(congruency_dt([1,4],:,1:2), 2))), 'FaceColor', 'flat', 'LineStyle', 'none', 'BarWidth', bar_width);
+b = bar(mean(squeeze(mean(congruency_dt(1:2,:,1:2), 2))), 'FaceColor', 'flat', 'LineStyle', 'none', 'BarWidth', bar_width);
 b.CData(1,:) = get_colour("blue", "");
 b.CData(2,:) = get_colour("red", "");
-errorbar([1], mean(squeeze(mean(congruency_dt([1,4],:,1), 2))), std(congruency_dt([1,4],:,1),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("blue", "dark"))
-errorbar([2], mean(squeeze(mean(congruency_dt([1,4],:,2), 2))), std(congruency_dt([1,4],:,2),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("red", "dark"))
+errorbar([1], mean(squeeze(mean(congruency_dt(1:2,:,1), 2))), std(congruency_dt(1:2,:,1),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("blue", "dark"))
+errorbar([2], mean(squeeze(mean(congruency_dt(1:2,:,2), 2))), std(congruency_dt(1:2,:,2),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("red", "dark"))
 xticks([1,2]);
 xticklabels(congruency_labels(1:2));
 xlim(xlimit);
@@ -356,31 +364,31 @@ ylim(dt_ylim);
 yticks(dt_yticks);
 ylabel('Decision time (ms)');
 % add individuals
-plot([1:2], reshape(squeeze(congruency_dt([1,4],:,1:2)), [50 2]), 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
+plot([1:2], reshape(squeeze(congruency_dt(1:2,:,1:2)), [50 2]), 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
 
 tM = subplot(2,3,2);
 hold on 
-b = bar(mean(squeeze(mean(congruency_dt(2:3,:,1:2), 2))), 'FaceColor', 'flat', 'LineStyle', 'none', 'BarWidth', bar_width);
+b = bar(mean(squeeze(mean(congruency_dt(3:4,:,1:2), 2))), 'FaceColor', 'flat', 'LineStyle', 'none', 'BarWidth', bar_width);
 b.CData(1,:) = get_colour("blue", "");
 b.CData(2,:) = get_colour("red", "");
-errorbar([1], mean(squeeze(mean(congruency_dt(2:3,:,1), 2))), std(congruency_dt(2:3,:,1),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("blue", "dark"))
-errorbar([2], mean(squeeze(mean(congruency_dt(2:3,:,2), 2))), std(congruency_dt(2:3,:,2),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("red", "dark"))
+errorbar([1], mean(squeeze(mean(congruency_dt(3:4,:,1), 2))), std(congruency_dt(3:4,:,1),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("blue", "dark"))
+errorbar([2], mean(squeeze(mean(congruency_dt(3:4,:,2), 2))), std(congruency_dt(3:4,:,2),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("red", "dark"))
 xticks([1,2]);
 xticklabels(congruency_labels(1:2));
 xlim(xlimit);
 ylim(dt_ylim);
 yticks(dt_yticks);
 % add individuals
-plot([1:2], reshape(squeeze(congruency_dt(2:3,:,1:2)), [50 2]), 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
+plot([1:2], reshape(squeeze(congruency_dt(3:4,:,1:2)), [50 2]), 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
 
 
 tR = subplot(2,3,3);
 hold on
-b = bar([mean(con_dt_effect(:,[1,4]), "all"), mean(con_dt_effect(:,2:3), "all")], 'FaceColor', 'flat', 'LineStyle', 'none', 'BarWidth', bar_width);
+b = bar([mean(con_dt_effect(:,1:2), "all"), mean(con_dt_effect(:,3:4), "all")], 'FaceColor', 'flat', 'LineStyle', 'none', 'BarWidth', bar_width);
 b.CData(1,:) = get_colour("pink", "");
 b.CData(2,:) = [0.5, 0.5, 0.5];
-errorbar([1], mean(con_dt_effect(:,[1,4]), "all"), std(con_dt_effect(:,[1,4]), [], "all") ./ sqrt(size(pp2do,2)), 'LineWidth', 1.5, 'Color', get_colour("pink", "dark"));
-errorbar([2], mean(con_dt_effect(:,2:3), "all"), std(con_dt_effect(:,2:3), [], "all") ./ sqrt(size(pp2do,2)), 'LineWidth', 1.5, 'Color', [0,0,0]);
+errorbar([1], mean(con_dt_effect(:,1:2), "all"), std(con_dt_effect(:,1:2), [], "all") ./ sqrt(size(pp2do,2)), 'LineWidth', 1.5, 'Color', get_colour("pink", "dark"));
+errorbar([2], mean(con_dt_effect(:,3:4), "all"), std(con_dt_effect(:,3:4), [], "all") ./ sqrt(size(pp2do,2)), 'LineWidth', 1.5, 'Color', [0,0,0]);
 xticks([1,2]);
 xticklabels({"action", "no action"});
 xlim(xlimit);
@@ -388,11 +396,11 @@ ylim([0, 200]);
 
 bL = subplot(2,3,4);
 hold on 
-b = bar(mean(squeeze(mean(congruency_er([1,4],:,1:2), 2))), 'FaceColor', 'flat', 'LineStyle', 'none', 'BarWidth', bar_width);
+b = bar(mean(squeeze(mean(congruency_er(1:2,:,1:2), 2))), 'FaceColor', 'flat', 'LineStyle', 'none', 'BarWidth', bar_width);
 b.CData(1,:) = get_colour("blue", "");
 b.CData(2,:) = get_colour("red", "");
-errorbar([1], mean(squeeze(mean(congruency_er([1,4],:,1), 2))), std(congruency_er([1,4],:,1),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("blue", "dark"))
-errorbar([2], mean(squeeze(mean(congruency_er([1,4],:,2), 2))), std(congruency_er([1,4],:,2),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("red", "dark"))
+errorbar([1], mean(squeeze(mean(congruency_er(1:2,:,1), 2))), std(congruency_er(1:2,:,1),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("blue", "dark"))
+errorbar([2], mean(squeeze(mean(congruency_er(1:2,:,2), 2))), std(congruency_er(1:2,:,2),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("red", "dark"))
 xticks([1,2]);
 xticklabels(congruency_labels(1:2));
 xlim(xlimit);
@@ -400,32 +408,32 @@ ylim(er_ylim);
 yticks(er_yticks);
 ylabel('Reproduction error (°)');
 % add individuals
-plot([1:2], reshape(squeeze(congruency_er([1,4],:,1:2)), [50 2]), 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
+plot([1:2], reshape(squeeze(congruency_er(1:2,:,1:2)), [50 2]), 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
 
 
 bM = subplot(2,3,5);
 hold on 
-b = bar(mean(squeeze(mean(congruency_er(2:3,:,1:2), 2))), 'FaceColor', 'flat', 'LineStyle', 'none', 'BarWidth', bar_width);
+b = bar(mean(squeeze(mean(congruency_er(3:4,:,1:2), 2))), 'FaceColor', 'flat', 'LineStyle', 'none', 'BarWidth', bar_width);
 b.CData(1,:) = get_colour("blue", "");
 b.CData(2,:) = get_colour("red", "");
-errorbar([1], mean(squeeze(mean(congruency_er(2:3,:,1), 2))), std(congruency_er(2:3,:,1),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("blue", "dark"))
-errorbar([2], mean(squeeze(mean(congruency_er(2:3,:,2), 2))), std(congruency_er(2:3,:,2),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("red", "dark"))
+errorbar([1], mean(squeeze(mean(congruency_er(3:4,:,1), 2))), std(congruency_er(3:4,:,1),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("blue", "dark"))
+errorbar([2], mean(squeeze(mean(congruency_er(3:4,:,2), 2))), std(congruency_er(3:4,:,2),[],"all") ./ sqrt(size(pp2do, 2)), 'LineStyle', 'none', 'LineWidth', 1.5, 'Color', get_colour("red", "dark"))
 xticks([1,2]);
 xticklabels(congruency_labels(1:2));
 xlim(xlimit);
 ylim(er_ylim);
 yticks(er_yticks);
 % add individuals
-plot([1:2], reshape(squeeze(congruency_er(2:3,:,1:2)), [50 2]), 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
+plot([1:2], reshape(squeeze(congruency_er(3:4,:,1:2)), [50 2]), 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
 
 
 bR = subplot(2,3,6);
 hold on
-b = bar([mean(con_er_effect(:,[1,4]), "all"), mean(con_er_effect(:,2:3), "all")], 'FaceColor', 'flat', 'LineStyle', 'none', 'BarWidth', bar_width);
+b = bar([mean(con_er_effect(:,1:2), "all"), mean(con_er_effect(:,3:4), "all")], 'FaceColor', 'flat', 'LineStyle', 'none', 'BarWidth', bar_width);
 b.CData(1,:) = get_colour("pink", "");
 b.CData(2,:) = [0.5, 0.5, 0.5];
-errorbar([1], mean(con_er_effect(:,[1,4]), "all"), std(con_er_effect(:,[1,4]), [], "all") ./ sqrt(size(pp2do,2)), 'LineWidth', 1.5, 'Color', get_colour("pink", "dark"));
-errorbar([2], mean(con_er_effect(:,2:3), "all"), std(con_er_effect(:,2:3), [], "all") ./ sqrt(size(pp2do,2)), 'LineWidth', 1.5, 'Color', [0,0,0]);
+errorbar([1], mean(con_er_effect(:,1:2), "all"), std(con_er_effect(:,1:2), [], "all") ./ sqrt(size(pp2do,2)), 'LineWidth', 1.5, 'Color', get_colour("pink", "dark"));
+errorbar([2], mean(con_er_effect(:,3:4), "all"), std(con_er_effect(:,3:4), [], "all") ./ sqrt(size(pp2do,2)), 'LineWidth', 1.5, 'Color', [0,0,0]);
 xticks([1,2]);
 xticklabels({"action", "no action"});
 xlim(xlimit);
@@ -451,12 +459,12 @@ bL.YLabel.Position = [-0.4435   20.0000   -1.0000];
 
 % stats stats stats
 p_values = zeros(2,3);
-[h,p_values(1,1),ci,stats] = ttest(reshape(congruency_dt([1,4],:,1), [50,1]), reshape(congruency_dt([1,4],:,2), [50,1]));
-d = meanEffectSize(reshape(congruency_dt([1,4],:,1), [50,1]), reshape(congruency_dt([1,4],:,2), [50,1]), "Paired", true, "Effect", "cohen") 
-[h,p_values(1,2),ci,stats] = ttest(reshape(congruency_dt(2:3,:,1), [50,1]), reshape(congruency_dt(2:3,:,2), [50,1]));
-[h,p_values(1,3),ci,stats] = ttest2(reshape(con_dt_effect(:,[1,4]), [50,1]), reshape(con_dt_effect(:,2:3), [50,1]));
-[h,p_values(2,1),ci,stats] = ttest(reshape(congruency_er([1,4],:,1), [50,1]), reshape(congruency_er([1,4],:,2), [50,1]));
-[h,p_values(2,2),ci,stats] = ttest(reshape(congruency_er(2:3,:,1), [50,1]), reshape(congruency_er(2:3,:,2), [50,1]));
-[h,p_values(2,3),ci,stats] = ttest2(reshape(con_er_effect(:,[1,4]), [50,1]), reshape(con_er_effect(:,2:3), [50,1]));
+[h,p_values(1,1),ci,stats] = ttest(reshape(congruency_dt(1:2,:,1), [50,1]), reshape(congruency_dt(1:2,:,2), [50,1]));
+d = meanEffectSize(reshape(congruency_dt(1:2,:,1), [50,1]), reshape(congruency_dt(1:2,:,2), [50,1]), "Paired", true, "Effect", "cohen") 
+[h,p_values(1,2),ci,stats] = ttest(reshape(congruency_dt(3:4,:,1), [50,1]), reshape(congruency_dt(3:4,:,2), [50,1]));
+[h,p_values(1,3),ci,stats] = ttest2(reshape(con_dt_effect(:,1:2), [50,1]), reshape(con_dt_effect(:,3:4), [50,1]));
+[h,p_values(2,1),ci,stats] = ttest(reshape(congruency_er(1:2,:,1), [50,1]), reshape(congruency_er(1:2,:,2), [50,1]));
+[h,p_values(2,2),ci,stats] = ttest(reshape(congruency_er(3:4,:,1), [50,1]), reshape(congruency_er(3:4,:,2), [50,1]));
+[h,p_values(2,3),ci,stats] = ttest2(reshape(con_er_effect(:,1:2), [50,1]), reshape(con_er_effect(:,3:4), [50,1]));
 
 end

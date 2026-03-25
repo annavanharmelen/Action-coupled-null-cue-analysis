@@ -10,7 +10,7 @@ oneOrTwoD       = 1;        oneOrTwoD_options = {'_1D','_2D'};
 nsmooth         = 200;
 plotSinglePps   = 0;
 plotGAs         = 0;
-plotFigures     = 0;
+plotFigures     = 1;
 xlimtoplot      = [-100 1500];
 
 %% set visual parameters
@@ -373,7 +373,7 @@ if plotFigures
 
     axes = {tL, mL, bL};
     for i = 1:size(axes,2)
-        xlabel(axes{i}, 'Time after cue (ms)', 'FontName', 'Aptos');
+        xlabel(axes{i}, 'Time (ms)', 'FontName', 'Aptos');
         set(axes{i}, 'Box', 'on');
         set(axes{i}, 'FontSize', [17]);
         set(axes{i}, 'FontName', 'Aptos');
@@ -381,8 +381,9 @@ if plotFigures
         
     end
 
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_post_cue", "-dsvg")
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_post_cue", "-dpng")
+
+    print("..\..\..\..\Manuscripts\vidi1\Figures\E1_saccade", "-dsvg")
+    print("..\..\..\..\Manuscripts\vidi1\Figures\E1_saccade", "-dpng")
 
     %% effect on attentional selection latency (bias post-probe)
     line = 2;
@@ -503,9 +504,6 @@ if plotFigures
         set(axes{i}, 'FontName', 'Aptos');
         set(axes{i}, 'LineWidth', 1.49);
     end
-
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_post_probe", "-dsvg")
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_post_probe", "-dpng")
 
     
 end

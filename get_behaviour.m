@@ -120,6 +120,8 @@ for pp = pp2do
     overall_dt(p,1) = mean(behdata.idle_reaction_time_in_ms(oktrials));
     overall_error(p,1) = mean(behdata.absolute_difference(oktrials));
     overall_perf(p,1) =  mean(behdata.performance(oktrials));
+    max_turns(p,1) = sum(behdata.turns_made == 239);
+    wrong_key(p,1) = sum(ismember(behdata.correct_key, 'False'));
     
     congruency_labels = {"match", "match", "match"};
 

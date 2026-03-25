@@ -580,15 +580,15 @@ if plot_averages
     % 
     % % set(gcf,'position',[0,0, 700,1080])
 
-    %% main figure for poster
+    %% main figure
     % settings
-    w = [100 2.5];
+    w = [80 2.5];
     xpos = [1 2];
     xpos_offset = [1.1, 1.9];
 
     % decision time
     figure;
-    tL = subplot(2,2,1);
+    tL = subplot(1,4,1);
     hold on 
     b = bar(mean(congruency_dt), 'FaceColor','flat', 'LineStyle', 'none');
     b.CData(1,:) = get_colour("blue", "");
@@ -611,7 +611,7 @@ if plot_averages
     [f_i, xi_i] = ksdensity(congruency_dt(:,3) - congruency_dt(:,2));
     [m,i] = min(abs(xi_i - mean(congruency_dt(:,3)-congruency_dt(:,2))));
 
-    tR = subplot(2,2,2);
+    tR = subplot(1,4,2);
     hold on 
     patch('XData', [f_c(:)*-w(1) + xpos(1), zeros(numel(xi_c(:)),1)],'yData', [xi_c(:),xi_c(:)],'FaceColor', get_colour("blue", ""), 'EdgeColor', 'none');
     patch('XData', [f_i(:)*w(1) + xpos(2), zeros(numel(xi_i(:)),1)],'yData', [xi_i(:),xi_i(:)],'FaceColor', get_colour("red", ""), 'EdgeColor', 'none');
@@ -621,6 +621,7 @@ if plot_averages
     xlim([0.25 2.75]);
     xticks([1 2]);
     xticklabels(congruency_labels([1,3]));
+    ylabel('ΔDec. time (ms)');
     yticks([-300, 0, 300]);
     ylim([-450 450]);
     % add individuals
@@ -630,7 +631,7 @@ if plot_averages
     
     
     % error
-    bL = subplot(2,2,3);
+    bL = subplot(1,4,3);
     hold on
     b = bar(mean(congruency_er), 'FaceColor','flat','LineStyle', 'none');
     b.CData(1,:) = get_colour("blue", "");
@@ -652,7 +653,7 @@ if plot_averages
     [f_i, xi_i] = ksdensity(congruency_er(:,3) - congruency_er(:,2));
     [m,i] = min(abs(xi_i - mean(congruency_er(:,3)-congruency_er(:,2))));
 
-    bR = subplot(2,2,4);
+    bR = subplot(1,4,4);
     hold on 
     patch('XData', [f_c(:)*-w(2) + xpos(1), zeros(numel(xi_c(:)),1)],'yData', [xi_c(:),xi_c(:)],'FaceColor', get_colour("blue", ""), 'EdgeColor', 'none');
     patch('XData', [f_i(:)*w(2) + xpos(2), zeros(numel(xi_i(:)),1)],'yData', [xi_i(:),xi_i(:)],'FaceColor', get_colour("red", ""), 'EdgeColor', 'none');
@@ -662,6 +663,7 @@ if plot_averages
     xlim([0.25 2.75]);
     xticks([1 2]);
     xticklabels(congruency_labels([1,3]));
+    ylabel('ΔRep. err. (°)');
     yticks([-10, 0, 10]);
     ylim([-15 15]);
     % add individuals
@@ -670,18 +672,28 @@ if plot_averages
     scatter(ones(25,1)*xpos_offset(2), congruency_er(:,3)-congruency_er(:,2), 20,  get_colour("red", ""), 'filled');  
     
     % general
-    set(gcf(), 'Position', [800 300 880 800]);
+    set(gcf(), 'Position', [500 500 1500 370]);
 
     axes = {tL, tR, bL, bR};
     for i = 1:size(axes,2)
         set(axes{i}, 'Box', 'on');
-        set(axes{i}, 'FontSize', [24.8]);
+        set(axes{i}, 'FontSize', [19.4]);
         set(axes{i}, 'FontName', 'Aptos');
-        set(axes{i}.XAxis, 'FontSize', 18);
-        set(axes{i}, 'LineWidth', 1.33);
+        set(axes{i}.XAxis, 'FontSize', 17);
+        set(axes{i}, 'XTickLabelRotation', 0);
+        set(axes{i}, 'LineWidth', 1);
     end
 
     bL.YLabel.Position = [-0.6417   20.0000   -1.0000];
+    tL.Position = [0.0898, 0.1814, 0.1469, 0.7436]
+    tR.Position = [0.3159, 0.1814, 0.1469, 0.7436]
+    bL.Position = [0.6020, 0.1814, 0.1469, 0.7436]
+    bR.Position = [0.8281, 0.1814, 0.1469, 0.7436]
+
+    
+    print("..\..\..\..\Manuscripts\vidi1\Figures\E2_behaviour", "-dsvg")
+    print("..\..\..\..\Manuscripts\vidi1\Figures\E2_behaviour", "-dpng")
+
 
     %% do some stats over previous figure
     n = size(pp2do,2);

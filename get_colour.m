@@ -8,7 +8,7 @@ if colour_name == "pink"
     elseif lightness == "light"
         colour = hex2rgb("#EC6EB8");
     else
-        colour = hex2rgb("#E63EA0");
+        colour = hex2rgb("#de4596");
     end
 
 elseif colour_name == "red"
@@ -17,7 +17,7 @@ elseif colour_name == "red"
     elseif lightness == "light"
         colour = hex2rgb("#E76B4A");
     else
-        colour = hex2rgb("#DF3A0D");
+        colour = hex2rgb("#de3e27");
     end
 
 elseif colour_name == "green"
@@ -26,7 +26,7 @@ elseif colour_name == "green"
     elseif lightness == "light"
         colour = hex2rgb("#48C76C");
     else
-        colour = hex2rgb("#14C747");
+        colour = hex2rgb("#43b64a");
     end
     
 elseif colour_name == "blue"
@@ -35,7 +35,7 @@ elseif colour_name == "blue"
     elseif lightness == "light"
         colour = hex2rgb("#40B2F0");
     else
-        colour = hex2rgb("#0098EB");
+        colour = hex2rgb("#1C96DE");
     end
 
 end

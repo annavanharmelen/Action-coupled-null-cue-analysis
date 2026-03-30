@@ -377,7 +377,7 @@ xticks([1,2]);
 xticklabels(congruency_labels(1:2));
 xlim(xlimit);
 ylim(dt_ylim);
-yticks(dt_yticks);
+yticks([]);
 % add individuals
 plot([1:2], reshape(squeeze(congruency_dt(3:4,:,1:2)), [50 2]), 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
 
@@ -393,6 +393,8 @@ xticks([1,2]);
 xticklabels({"action", "no action"});
 xlim(xlimit);
 ylim([0, 200]);
+yticks([0, 100, 200]);
+lab_1 = ylabel('Decision time (dms)', 'Position', [-0.3355, 100.0, -1]);
 
 bL = subplot(2,3,4);
 hold on 
@@ -406,7 +408,7 @@ xticklabels(congruency_labels(1:2));
 xlim(xlimit);
 ylim(er_ylim);
 yticks(er_yticks);
-ylabel('Reproduction error (°)');
+ylabel('Reproduction error (°)', 'Position', [-0.30317, 20, -1]);
 % add individuals
 plot([1:2], reshape(squeeze(congruency_er(1:2,:,1:2)), [50 2]), 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
 
@@ -422,7 +424,7 @@ xticks([1,2]);
 xticklabels(congruency_labels(1:2));
 xlim(xlimit);
 ylim(er_ylim);
-yticks(er_yticks);
+yticks([]);
 % add individuals
 plot([1:2], reshape(squeeze(congruency_er(3:4,:,1:2)), [50 2]), 'Color', [0, 0, 0, 0.25], 'LineWidth', 0.75);
 
@@ -438,24 +440,30 @@ xticks([1,2]);
 xticklabels({"action", "no action"});
 xlim(xlimit);
 ylim([0, 6]);
+ylabel('Reproduction error (d°)', 'Position', [-0.3355, 3.0, -1]);
 % xtickangle(30);
 
 % general
-set(gcf(), 'Position', [800 300 1200 800]);
+set(gcf(), 'Position', [800 300 1000 800]);
+% set(gcf(), 'Position', [500 500 1500 370]);
+
 
 axes = {tL, tM, tR, bL, bM, bR};
 for i = 1:size(axes,2)
     set(axes{i}, 'Box', 'on');
-    set(axes{i}, 'FontSize', [24.8]);
+    set(axes{i}, 'FontSize', [22.8]);
     set(axes{i}, 'FontName', 'Aptos');
-    set(axes{i}.XAxis, 'FontSize', 18);
-    set(axes{i}, 'LineWidth', 1.33);
+    set(axes{i}, 'LineWidth', 1.28);
+    set(axes{i}, 'XTickLabelRotation', 0);
 end
 
-bL.YLabel.Position = [-0.4435   20.0000   -1.0000];
+tM.Position = [0.3808, 0.5838, 0.2134, 0.3412];
+bM.Position = [0.3808, 0.1100, 0.2134, 0.3412];
+tR.Position = [0.7652, 0.5838, 0.2134, 0.3412];
+bR.Position = [0.7652, 0.1100, 0.2134, 0.3412];
 
-% print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\behaviour_effect_of_action", "-dsvg")
-% print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\behaviour_effect_of_action", "-dpng")
+print("..\..\..\..\Manuscripts\vidi1\Figures\comp_behaviour", "-dsvg")
+print("..\..\..\..\Manuscripts\vidi1\Figures\comp_behaviour", "-dpng")
 
 % stats stats stats
 p_values = zeros(2,3);

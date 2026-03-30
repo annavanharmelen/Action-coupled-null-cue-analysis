@@ -121,11 +121,11 @@ if plotFigures
     yticks([-0.2 0 0.2 0.4]);
     ylabel('Saccade bias (ΔHz)');
     xlabel('Time after cue (ms)');
-    legend([p1, p2], {'must engange with cue', 'can disregard cue'}, 'EdgeColor', 'none', 'AutoUpdate','off', 'FontSize', 25.4);
-    set(gca(), 'FontSize', [25.4]);
+    legend([p1, p2], {'must engange with colour change', 'can disregard colour change'}, 'EdgeColor', 'none', 'AutoUpdate','off', 'FontSize', 22.8);
+    set(gca(), 'FontSize', [22.8]);
     set(gca(), 'FontName', 'Aptos');
     set(gca(), 'Box', 'on');
-    set(gca(), 'LineWidth', 1.49);
+    set(gca(), 'LineWidth', 1.31);
     set(gcf(), 'Position', [500 500 850 800])
 
     % add stats
@@ -148,11 +148,12 @@ if plotFigures
     mask_compare = double(stat_compare.mask); mask_compare(mask_compare==0) = nan;
 
     sig1 = plot(saccade.time(timeframe), mask_action*-0.16, 'Color', get_colour("pink",""), 'LineWidth', 4); %shown already in first figure
-    sig2 = plot(saccade.time(timeframe), mask_no_action*-0.15, 'Color', [0.5,0.5,0.5], 'LineWidth', 4); % not significant
-    sig3 = plot(saccade.time(timeframe), mask_compare*-0.14, 'Color', 'k', 'LineWidth', 4);
+    sig2 = plot(saccade.time(timeframe), mask_no_action*-0.13, 'Color', [0.5,0.5,0.5], 'LineWidth', 4); % not significant
+    sig3 = plot(saccade.time(timeframe), mask_compare*-0.10, 'Color', 'k', 'LineWidth', 4);
 
-    % print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_effect_of_action", "-dsvg")
-    % print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\saccade_effect_of_action", "-dpng")
+    
+    print("..\..\..\..\Manuscripts\vidi1\Figures\comp_saccade", "-dsvg")
+    print("..\..\..\..\Manuscripts\vidi1\Figures\comp_saccade", "-dpng")
 
     %% Interaction between microsaccade bias and RT (combined E1 and E2)
     figure;

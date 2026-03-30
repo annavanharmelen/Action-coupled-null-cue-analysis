@@ -7,7 +7,7 @@ if study == 1
 
 elseif study == 2
     unique_numbers = [78, 23, 87, 63, 29, 38, 28, 80, 68, 45, 32, 95, 93, 48, 56, 47, 40, 79, 84, 49, 31, 36, 20, 50, 85, 60, 82, 99, 89, 19]; %needs to be in the right order
-    param.path = '\\scistor.vu.nl\shares\FGB-ETP-CogPsy-ProactiveBrainLab\core_lab_members\Laurie\extra_neutral\';
+    param.path = '\\scistor.vu.nl\shares\FGB-ETP-CogPsy-ProactiveBrainLab\core_lab_members\Laurie\vidi5 extra_neutral\';
     
 elseif study == 3
     unique_numbers = [89, 57, 75, 12, 92, 95, 90, 79, 47, 10, 85, 53, 99, 34, 74, 55, 94, 68, 73, 97, 50, 36, 93, 35, 61, 84, 56]; %needs to be in the right order

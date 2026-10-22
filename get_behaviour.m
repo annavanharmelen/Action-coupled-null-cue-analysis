@@ -7,6 +7,7 @@ see_performance = 0;
 display_percentageok = 1;
 plot_individuals = 0;
 plot_averages = 0;
+plotFigures = 0;
 
 pp2do = [1:9,11:26]; 
 p = 0;
@@ -547,8 +548,10 @@ if plot_averages
     % title(['pNT effect - averaged']);
     % 
     % % set(gcf,'position',[0,0, 700,1080])
+end
 
-    %% main figure
+%% main figure
+if plotFigures
     % settings
     w = [100 2.5];
     xpos = [1 2];

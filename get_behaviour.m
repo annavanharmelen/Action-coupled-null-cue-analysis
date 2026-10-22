@@ -34,6 +34,35 @@ for pp = pp2do
     % oktrials = abs(zscore(behdata.absolute_difference))<=3; 
     percentageok(p) = mean(oktrials)*100;
 
+    %% get pretty accurate proxy of reaction time to capture cue onset
+    % so intervening task reaction time
+
+    % some magic to transfer saved string timings to matrix of doubles
+    % (can only do this for rows with exactly two key presses, those are
+    % the only ones where we know for sure the RT)
+    trimmed_string = erase(behdata.premature_timing(behdata.cue_hit == "True"), ["[", "]"]);
+    num_cells = cellfun(@(x) str2double(split(x, ',')), cellstr(trimmed_string), 'UniformOutput', false);
+    valid_mask = cellfun(@(x) numel(x) == 2, num_cells); %keep only rows with exactly two rt's
+    filtered_cells = num_cells(valid_mask);
+    row_cells = cellfun(@(x) x(:).', filtered_cells, 'UniformOutput', false);
+    key_press_timing = cell2mat(row_cells);
+
+    % take average of both key presses as RT on intervening task
+    raw_int_rt = mean(key_press_timing, 2);
+
+    % convert raw rt (locked to start of measurement of idle_reaction_time,
+    % roughly same as onset of probe cue frame)
+    int_rt = raw_int_rt + 1250 + 250;
+
+    % from which trials did we calculate intervening task RT
+    replacement_idxs = behdata.trial_number(behdata.cue_hit == "True");
+    replacement_idxs = replacement_idxs(valid_mask);
+
+    % add intervening task RT to behdata
+    RTs_to_add = NaN(size(behdata,1),1);
+    RTs_to_add(replacement_idxs) = int_rt;
+    behdata.intervening_task_rt = RTs_to_add;
+
     %% display percentage OK
     if display_percentageok
         fprintf('%s has %.2f%% OK trials ', param.subjName, percentageok(p))
@@ -93,6 +122,9 @@ for pp = pp2do
 
     left_target_trials = ismember(behdata.target_bar, {'left'});
     right_target_trials = ismember(behdata.target_bar, {'right'});
+
+    bm_dt_trials = behdata.intervening_task_rt < median(behdata.intervening_task_rt(oktrials), "omitnan")&oktrials;
+    am_dt_trials = behdata.intervening_task_rt > median(behdata.intervening_task_rt(oktrials), "omitnan")&oktrials;
     
     %% save hit/miss/false_alarm/correct_rejection
     % hits, misses, false_alarms, correct_rejections
@@ -105,13 +137,13 @@ for pp = pp2do
     % response required trials, no response required trials
 	trial_types(p,1) = sum((respond_trials & behdata.capture_colour_id == 3 & oktrials) | (not_respond_trials & behdata.capture_colour_id ~= 3 & oktrials));
     trial_types(p,2) = sum((respond_trials & behdata.capture_colour_id ~= 3 & oktrials) | (not_respond_trials & behdata.capture_colour_id == 3 & oktrials));
+
     %% mixture models of target error
     non_target_orientations = behdata.left_orientation;
     non_target_orientations(behdata.target_bar == "left") = behdata.right_orientation(behdata.target_bar == "left");
     [con_B(p,:), ~, W] = mixtureFit(deg2rad(behdata.report_orientation(congruent_trials)), deg2rad(behdata.target_orientation(congruent_trials)), deg2rad(non_target_orientations(congruent_trials)));
     [incon_B(p,:), ~, ~] = mixtureFit(deg2rad(behdata.report_orientation(incongruent_trials)), deg2rad(behdata.target_orientation(incongruent_trials)), deg2rad(non_target_orientations(incongruent_trials)));
     [neu_B(p,:), ~, ~] = mixtureFit(deg2rad(behdata.report_orientation(neutral_trials)), deg2rad(behdata.target_orientation(neutral_trials)), deg2rad(non_target_orientations(neutral_trials)));
-
 
     %% extract data of interest
     overall_dt(p,1) = mean(behdata.idle_reaction_time_in_ms(oktrials));
@@ -177,7 +209,18 @@ for pp = pp2do
     block_congruency_er(p,2) = mean(behdata.absolute_difference(respond_trials&oktrials&incongruent_trials));
     block_congruency_er(p,3) = mean(behdata.absolute_difference(not_respond_trials&oktrials&congruent_trials));
     block_congruency_er(p,4) = mean(behdata.absolute_difference(not_respond_trials&oktrials&incongruent_trials));
+    
+    % median splits on intervening task RT
+    bm_dt(p,1) = mean(behdata.idle_reaction_time_in_ms(bm_dt_trials&congruent_trials));
+    bm_dt(p,2) = mean(behdata.idle_reaction_time_in_ms(bm_dt_trials&incongruent_trials));
+    am_dt(p,1) = mean(behdata.idle_reaction_time_in_ms(am_dt_trials&congruent_trials));
+    am_dt(p,2) = mean(behdata.idle_reaction_time_in_ms(am_dt_trials&incongruent_trials));
 
+    bm_er(p,1) = mean(behdata.absolute_difference(bm_dt_trials&congruent_trials));
+    bm_er(p,2) = mean(behdata.absolute_difference(bm_dt_trials&incongruent_trials));
+    am_er(p,1) = mean(behdata.absolute_difference(am_dt_trials&congruent_trials));
+    am_er(p,2) = mean(behdata.absolute_difference(am_dt_trials&incongruent_trials));
+    
     %% calculate aggregates of interest
    pressed_dt_effect(p,1) = pressed_congruency_dt(p,2) - pressed_congruency_dt(p,1);
    pressed_dt_effect(p,2) = pressed_congruency_dt(p,4) - pressed_congruency_dt(p,3);
@@ -699,6 +742,70 @@ if plotFigures
     temp = meanEffectSize(congruency_er(:,1), congruency_er(:,3), "Paired", true, "Effect", "cohen");
     cohen_ds(3,2) = temp.Effect;
    
+end
+
+if plot_averages
+    %% median split on RT on intervening task
+    figure;
+    subplot(1,2,1)
+    hold on
+    bar(mean(bm_dt));
+    plot(bm_dt', 'Color', [0.5, 0.5, 0.5]);
+    errorbar(mean(bm_dt), std(bm_dt), 'LineStyle', 'none');
+    xticks([1,2]);
+    xticklabels({"congruent", "incongruent"});
+    ylabel("Decision time (ms)");
+    title('below median RT');
+    
+    subplot(1,2,2)
+    hold on
+    bar(mean(am_dt));
+    plot(am_dt', 'Color', [0.5, 0.5, 0.5]);
+    errorbar(mean(am_dt), std(am_dt), 'LineStyle', 'none');
+    xticks([1,2]);
+    xticklabels({"congruent", "incongruent"});
+    ylabel("Decision time (ms)");
+    title('above median RT');
+    
+    figure;
+    hold on
+    bar([1,2], [mean(bm_dt(:,2) - bm_dt(:,1)), mean(am_dt(:,2) - am_dt(:,1))]);
+    plot([bm_dt(:,2) - bm_dt(:,1), am_dt(:,2) - am_dt(:,1)]', 'Color', [0.5, 0.5, 0.5]);
+    errorbar([mean(bm_dt(:,2) - bm_dt(:,1)), mean(am_dt(:,2) - am_dt(:,1))], [std(bm_dt(:,2) - bm_dt(:,1)), std(am_dt(:,2) - am_dt(:,1))], 'LineStyle', 'none');
+    xticks([1,2]);
+    xticklabels({"fast", "slow"});
+    ylabel("Congruency effect (ms)");
+    
+    %% median split on error on intervening task
+    figure;
+    subplot(1,2,1)
+    hold on
+    bar(mean(bm_er));
+    plot(bm_er', 'Color', [0.5, 0.5, 0.5]);
+    errorbar(mean(bm_er), std(bm_er), 'LineStyle', 'none');
+    xticks([1,2]);
+    xticklabels({"congruent", "incongruent"});
+    ylabel("Error (deg)");
+    title('below median error');
+    
+    subplot(1,2,2)
+    hold on
+    bar(mean(am_er));
+    plot(am_er', 'Color', [0.5, 0.5, 0.5]);
+    errorbar(mean(am_er), std(am_er), 'LineStyle', 'none');
+    xticks([1,2]);
+    xticklabels({"congruent", "incongruent"});
+    ylabel("Error (deg)");
+    title('above median error');
+    
+    figure;
+    hold on
+    bar([1,2], [mean(bm_er(:,2) - bm_er(:,1)), mean(am_er(:,2) - am_er(:,1))]);
+    plot([bm_er(:,2) - bm_er(:,1), am_er(:,2) - am_er(:,1)]', 'Color', [0.5, 0.5, 0.5]);
+    errorbar([mean(bm_er(:,2) - bm_er(:,1)), mean(am_er(:,2) - am_er(:,1))], [std(bm_er(:,2) - bm_er(:,1)), std(am_er(:,2) - am_er(:,1))], 'LineStyle', 'none');
+    xticks([1,2]);
+    xticklabels({"accurate", "inaccurate"});
+    ylabel("Congruency effect (ms)");
 end
 
 %% see performance per block (for fun for participants)

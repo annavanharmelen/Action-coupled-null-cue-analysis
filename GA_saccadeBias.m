@@ -10,7 +10,7 @@ oneOrTwoD       = 1;        oneOrTwoD_options = {'_1D','_2D'};
 nsmooth         = 200;
 plotSinglePps   = 0;
 plotGAs         = 0;
-plotFigures     = 1;
+plotFigures     = 0;
 xlimtoplot      = [-100 1500];
 
 %% set visual parameters
@@ -30,12 +30,18 @@ for pp = pp2do
     disp(['getting data from participant ', param.subjName]);
     load([param.path, '\saved_data\saccadeEffects', oneOrTwoD_options{oneOrTwoD} '__', param.subjName], 'saccade','saccadesize');
 
-    % save averages (saccade effect (capture cue effect and probe cue reaction)
-    avg_saccade_effect(s, 1) = mean(saccade.effect(12,saccade.time>=200 & saccade.time<=600));
-    avg_saccade_effect(s, 2) = mean(saccade.effect(16,saccade.time>=200 & saccade.time<=600));
-    avg_saccade_effect(s, 3) = mean(saccade.effect(13,saccade.time>=200 & saccade.time<=600));
-    avg_saccade_effect(s, 4) = mean(saccade.effect(17,saccade.time>=200 & saccade.time<=600));
-       
+    % save averages (saccade effect (median split on dt for congruent and incongruent)
+    % order: congruent fast, congruent slow, incongruent fast, incongruent slow
+    avg_postcue(s, 1) = mean(saccade.effect(12,saccade.time>=200 & saccade.time<=600));
+    avg_postcue(s, 2) = mean(saccade.effect(16,saccade.time>=200 & saccade.time<=600));
+    avg_postcue(s, 3) = mean(saccade.effect(13,saccade.time>=200 & saccade.time<=600));
+    avg_postcue(s, 4) = mean(saccade.effect(17,saccade.time>=200 & saccade.time<=600));
+
+    avg_precue(s, 1) = mean(saccade.effect(12,saccade.time>=-500 & saccade.time<=0));
+    avg_precue(s, 2) = mean(saccade.effect(16,saccade.time>=-500 & saccade.time<=0));
+    avg_precue(s, 3) = mean(saccade.effect(13,saccade.time>=-500 & saccade.time<=0));
+    avg_precue(s, 4) = mean(saccade.effect(17,saccade.time>=-500 & saccade.time<=0));
+    
     % smooth?
     if nsmooth > 0
         for x1 = 1:size(saccade.toward,1)
@@ -240,16 +246,17 @@ if plotGAs
     c1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,16,:)), [0.5, 0.5, 0.5], 'se');
     c2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,12,:)), 'b', 'se');
     legend([c1, c2], {'above median DT', 'below median DT'});
-    xlim(xlimtoplot);
-    title('Congruent');
+    xlim([-500, 1500]);
     ylabel('Saccade bias (Hz)');
-
+    title('Congruent');
+    
     subplot(2,2,2)
     hold on
     i1 = frevede_errorbarplot(saccade.time, squeeze(d3(:,17,:)), [0.5, 0.5, 0.5], 'se');
     i2 = frevede_errorbarplot(saccade.time, squeeze(d3(:,13,:)), 'r', 'se');
     legend([i1, i2], {'above median DT', 'below median DT'});
-    xlim(xlimtoplot);
+    xlim([-500, 1500]);
+    ylabel('Saccade bias (Hz)');
     title('Incongruent');
 
     subplot(2,2,3)
@@ -257,16 +264,39 @@ if plotGAs
     c3 = frevede_errorbarplot(saccade.time, squeeze(d3(:,18,:)), [0.5, 0.5, 0.5], 'se');
     c4 = frevede_errorbarplot(saccade.time, squeeze(d3(:,14,:)), 'b', 'se');
     legend([c3, c4], {'above median ER', 'below median ER'});
-    xlim(xlimtoplot);
+    xlim([-500, 1500]);
     ylabel('Saccade bias (Hz)');
+    title('Congruent');
 
     subplot(2,2,4)
     hold on
     i3 = frevede_errorbarplot(saccade.time, squeeze(d3(:,19,:)), [0.5, 0.5, 0.5], 'se');
     i4 = frevede_errorbarplot(saccade.time, squeeze(d3(:,15,:)), 'r', 'se');
     legend([i3, i4], {'above median ER', 'below median ER'});
-    xlim(xlimtoplot);
+    xlim([-500, 1500]);
+    ylabel('Saccade bias (Hz)');
+    title('Incongruent');
 
+    %% bar graph of pre-cue effect of capture on final RT
+    figure;
+    hold on
+    b1 = bar([1,2], mean(avg_precue(:,1:2)), 0.6);
+    b2 = bar([3,4], mean(avg_precue(:,3:4)), 0.6);
+    errorbar(mean(avg_precue), std(avg_precue) ./ sqrt(size(pp2do,2)), 'LineStyle', 'None', 'Color', 'k');
+    ylabel('Mean saccade rate (ΔHz)');
+    xticks([1,2,3,4]);
+    xticklabels({'fast', 'slow', 'fast', 'slow'});
+    ylim([-0.1, 0.3]);
+    legend({'congruent', 'incongruent'});
+    title('Pre-cue');
+    
+    % stats over previous figure
+    n = size(pp2do,2);
+    precue_tbl = table([1:n,1:n,1:n,1:n]', [ones(n,1);ones(n,1)*2;ones(n,1);ones(n,1)*2], [ones(n*2,1);ones(n*2,1)*2], [avg_precue(:,1);avg_precue(:,2);avg_precue(:,3);avg_precue(:,4)], 'VariableNames', {'participant_id', 'speed', 'condition', 'bias'});
+    
+    precue_lme = fitlme(precue_tbl, 'bias ~ condition * speed + (1|participant_id)')
+    anova(precue_lme )
+   
     %% plot fast vs. slow (median-split) on saccade data
     % as timecourse
     figure;
@@ -282,20 +312,25 @@ if plotGAs
     % as bargraph
     figure;
     hold on
-    b1 = bar([1,2], mean(avg_saccade_effect(:,1:2)), 0.6);
-    b2 = bar([3,4], mean(avg_saccade_effect(:,3:4)), 0.6);
-    errorbar(mean(avg_saccade_effect), std(avg_saccade_effect) ./ sqrt(size(pp2do,2)), 'LineStyle', 'None', 'Color', 'k');
+    b1 = bar([1,2], mean(avg_postcue(:,1:2)), 0.6);
+    b2 = bar([3,4], mean(avg_postcue(:,3:4)), 0.6);
+    errorbar(mean(avg_postcue), std(avg_postcue) ./ sqrt(size(pp2do,2)), 'LineStyle', 'None', 'Color', 'k');
     ylabel('Mean saccade rate (ΔHz)');
     xticks([1,2,3,4]);
     xticklabels({'fast', 'slow', 'fast', 'slow'});
+    ylim([-0.1, 0.3]);
     legend({'congruent', 'incongruent'});
+    title('200-600 ms post-cue');
     
-    % first level = condition, second level = fast or slow
-    stats = rm_anova2([avg_saccade_effect(:,1);avg_saccade_effect(:,2);avg_saccade_effect(:,3);avg_saccade_effect(:,4)], repmat([1:25]',4,1), [ones(50,1);ones(50,1)*2], [ones(25,1);ones(25,1)*2;ones(25,1);ones(25,1)*2], {'condition',  'speed'})
+    % stats over previous figure
+    n = size(pp2do,2);
+    postcue_tbl = table([1:n,1:n,1:n,1:n]', [ones(n,1);ones(n,1)*2;ones(n,1);ones(n,1)*2], [ones(n*2,1);ones(n*2,1)*2], [avg_postcue(:,1);avg_postcue(:,2);avg_postcue(:,3);avg_postcue(:,4)], 'VariableNames', {'participant_id', 'speed', 'condition', 'bias'});
     
-    [h,p,ci,stats] = ttest(avg_saccade_effect(:,1), avg_saccade_effect(:,2))
-    [h,p,ci,stats] = ttest(avg_saccade_effect(:,3), avg_saccade_effect(:,4))
+    postcue_lme = fitlme(postcue_tbl, 'bias ~ condition * speed + (1|participant_id)')
+    anova(postcue_lme )
+   
 end
+
 %% main figures for poster
 if plotFigures
     %% saccade bias post-cue, including size course
@@ -382,8 +417,8 @@ if plotFigures
     end
 
 
-    print("..\..\..\..\Manuscripts\vidi1\Figures\E1_saccade", "-dsvg")
-    print("..\..\..\..\Manuscripts\vidi1\Figures\E1_saccade", "-dpng")
+    % print("..\..\..\..\Manuscripts\vidi1\Figures\E1_saccade", "-dsvg")
+    % print("..\..\..\..\Manuscripts\vidi1\Figures\E1_saccade", "-dpng")
 
     %% effect on attentional selection latency (bias post-probe)
     line = 2;

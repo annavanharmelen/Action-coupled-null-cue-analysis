@@ -10,7 +10,7 @@ oneOrTwoD       = 1;        oneOrTwoD_options = {'_1D','_2D'};
 nsmooth         = 200;
 plotSinglePps   = 0;
 plotGAs         = 0;
-plotFigures     = 1;
+plotFigures     = 0;
 xlimtoplot      = [-100 1500];
 
 %% set visual parameters
@@ -408,8 +408,8 @@ if plotFigures
     end
 
 
-    print("..\..\..\..\Manuscripts\vidi1\Figures\E2_saccade", "-dsvg")
-    print("..\..\..\..\Manuscripts\vidi1\Figures\E2_saccade", "-dpng")
+    % print("..\..\..\..\Manuscripts\vidi1\Figures\E2_saccade", "-dsvg")
+    % print("..\..\..\..\Manuscripts\vidi1\Figures\E2_saccade", "-dpng")
 
 
     %% effect on attentional selection latency (bias post-probe)

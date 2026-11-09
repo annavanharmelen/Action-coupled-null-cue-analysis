@@ -152,8 +152,8 @@ if plotFigures
     sig3 = plot(saccade.time(timeframe), mask_compare*-0.10, 'Color', 'k', 'LineWidth', 4);
 
     
-    print("..\..\..\..\Manuscripts\vidi1\Figures\comp_saccade", "-dsvg")
-    print("..\..\..\..\Manuscripts\vidi1\Figures\comp_saccade", "-dpng")
+    % print("..\..\..\..\Manuscripts\vidi1\Figures\comp_saccade", "-dsvg")
+    % print("..\..\..\..\Manuscripts\vidi1\Figures\comp_saccade", "-dpng")
 
     %% Interaction between microsaccade bias and RT (combined E1 and E2)
     figure;

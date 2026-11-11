@@ -462,8 +462,8 @@ bM.Position = [0.3808, 0.1100, 0.2134, 0.3412];
 tR.Position = [0.7652, 0.5838, 0.2134, 0.3412];
 bR.Position = [0.7652, 0.1100, 0.2134, 0.3412];
 
-print("..\..\..\..\Manuscripts\vidi1\Figures\comp_behaviour", "-dsvg")
-print("..\..\..\..\Manuscripts\vidi1\Figures\comp_behaviour", "-dpng")
+% print("..\..\..\..\Manuscripts\vidi1\Figures\comp_behaviour", "-dsvg")
+% print("..\..\..\..\Manuscripts\vidi1\Figures\comp_behaviour", "-dpng")
 
 % stats stats stats
 p_values = zeros(2,3);

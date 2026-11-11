@@ -766,13 +766,13 @@ if plotFigures
     % calculate 95% CI's
     t_scores = tinv([0.025  0.975], size(pp2do,2) - 1);
 
-    CI_dt_values(1,1:2) = mean(congruency_dt(:,1)) + t_scores*SEM_values(1,1);
-    CI_dt_values(2,1:2) = mean(congruency_dt(:,2)) + t_scores*SEM_values(2,1);
-    CI_dt_values(3,1:2) = mean(congruency_dt(:,3)) + t_scores*SEM_values(3,1);
+    CI_dt_values(1,1:2) = mean_values(1,1) + t_scores*SEM_values(1,1);
+    CI_dt_values(2,1:2) = mean_values(2,1) + t_scores*SEM_values(2,1);
+    CI_dt_values(3,1:2) = mean_values(3,1) + t_scores*SEM_values(3,1);
 
-    CI_er_values(1,1:2) = mean(congruency_er(:,1)) + t_scores*SEM_values(1,2);
-    CI_er_values(2,1:2) = mean(congruency_er(:,2)) + t_scores*SEM_values(2,2);
-    CI_er_values(3,1:2) = mean(congruency_er(:,3)) + t_scores*SEM_values(3,2);
+    CI_er_values(1,1:2) = mean_values(1,2) + t_scores*SEM_values(1,2);
+    CI_er_values(2,1:2) = mean_values(2,2) + t_scores*SEM_values(2,2);
+    CI_er_values(3,1:2) = mean_values(3,2) + t_scores*SEM_values(3,2);
    
 end
 

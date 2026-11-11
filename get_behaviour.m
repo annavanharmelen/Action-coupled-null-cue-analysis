@@ -710,7 +710,9 @@ if plotFigures
     %% do some stats over previous figure
     n = size(pp2do,2);
     dt_tbl = table([1:n,1:n,1:n]', [congruency_dt(:,1);congruency_dt(:,2);congruency_dt(:,3)],[ones(n,1);ones(n,1)*2;ones(n,1)*3], 'VariableNames', {'participant_id', 'decision_time', 'condition'});
+    dt_tbl.condition = categorical(dt_tbl.condition);
     er_tbl = table([1:n,1:n,1:n]', [congruency_er(:,1);congruency_er(:,2);congruency_er(:,3)],[ones(n,1);ones(n,1)*2;ones(n,1)*3], 'VariableNames', {'participant_id', 'error', 'condition'});
+    er_tbl.condition = categorical(er_tbl.condition);
 
     dt_lme = fitlme(dt_tbl,'decision_time ~ condition + (1|participant_id)')
     anova(dt_lme)

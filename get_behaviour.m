@@ -344,8 +344,8 @@ if plot_averages
     tR.Position = [0.6530    0.5838    0.3177    0.3412];
     bR.Position = [0.6530    0.1100    0.3177    0.3412];
 
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\behavioural_consequences_of_selection_mixture_modelling", "-dsvg")
-    print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\behavioural_consequences_of_selection_mixture_modelling", "-dpng")
+    % print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\behavioural_consequences_of_selection_mixture_modelling", "-dsvg")
+    % print("C:\Users\annav\Documents\Surfdrive\Conferences\ICON 2025\Figures\behavioural_consequences_of_selection_mixture_modelling", "-dpng")
      
 %% stats over previous figure (mixture modelling)
     % some stats
@@ -704,8 +704,8 @@ if plotFigures
     bL.Position = [0.6020, 0.1814, 0.1469, 0.7436]
     bR.Position = [0.8281, 0.1814, 0.1469, 0.7436]
 
-    print("..\..\..\..\Manuscripts\vidi1\Figures\E1_behaviour", "-dsvg")
-    print("..\..\..\..\Manuscripts\vidi1\Figures\E1_behaviour", "-dpng")
+    % print("..\..\..\..\Manuscripts\vidi1\Figures\E1_behaviour", "-dsvg")
+    % print("..\..\..\..\Manuscripts\vidi1\Figures\E1_behaviour", "-dpng")
      
     %% do some stats over previous figure
     n = size(pp2do,2);

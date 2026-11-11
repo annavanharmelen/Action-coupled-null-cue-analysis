@@ -721,14 +721,15 @@ if plotFigures
 
     %post-hoc pairwise comparison
     p_values = zeros(3,2)
-    [h,p_values(1,1),ci,stats] = ttest(congruency_dt(:,1), congruency_dt(:,2));
-    [h,p_values(2,1),ci,stats] = ttest(congruency_dt(:,2), congruency_dt(:,3));
-    [h,p_values(3,1),ci,stats] = ttest(congruency_dt(:,1), congruency_dt(:,3));
+    [h,p_values(1,1),ci,stats] = ttest(congruency_dt(:,1), congruency_dt(:,2)); % C - N
+    [h,p_values(2,1),ci,stats] = ttest(congruency_dt(:,2), congruency_dt(:,3)); % N - I
+    [h,p_values(3,1),ci,stats] = ttest(congruency_dt(:,1), congruency_dt(:,3)); % C - I
 
-    [h,p_values(1,2),ci,stats] = ttest(congruency_er(:,1), congruency_er(:,2));
-    [h,p_values(2,2),ci,stats] = ttest(congruency_er(:,2), congruency_er(:,3));
-    [h,p_values(3,2),ci,stats] = ttest(congruency_er(:,1), congruency_er(:,3));
+    [h,p_values(1,2),ci,stats] = ttest(congruency_er(:,1), congruency_er(:,2)); % C - N
+    [h,p_values(2,2),ci,stats] = ttest(congruency_er(:,2), congruency_er(:,3)); % N - I
+    [h,p_values(3,2),ci,stats] = ttest(congruency_er(:,1), congruency_er(:,3)); % C - I
     
+    % calculate effect sizes
     cohen_ds = zeros(3,2);
     temp = meanEffectSize(congruency_dt(:,1), congruency_dt(:,2), "Paired", true, "Effect", "cohen");
     cohen_ds(1,1) = temp.Effect;
@@ -743,6 +744,35 @@ if plotFigures
     cohen_ds(2,2) = temp.Effect;
     temp = meanEffectSize(congruency_er(:,1), congruency_er(:,3), "Paired", true, "Effect", "cohen");
     cohen_ds(3,2) = temp.Effect;
+
+    % get means neatly together
+    mean_values(1,1) = mean(congruency_dt(:,1));
+    mean_values(2,1) = mean(congruency_dt(:,2));
+    mean_values(3,1) = mean(congruency_dt(:,3));
+
+    mean_values(1,2) = mean(congruency_er(:,1));
+    mean_values(2,2) = mean(congruency_er(:,2));
+    mean_values(3,2) = mean(congruency_er(:,3));
+    
+    % calculate SEMs
+    SEM_values(1,1) = std(congruency_dt(:,1)) ./ sqrt(size(pp2do,2));
+    SEM_values(2,1) = std(congruency_dt(:,2)) ./ sqrt(size(pp2do,2));
+    SEM_values(3,1) = std(congruency_dt(:,3)) ./ sqrt(size(pp2do,2));
+
+    SEM_values(1,2) = std(congruency_er(:,1)) ./ sqrt(size(pp2do,2));
+    SEM_values(2,2) = std(congruency_er(:,2)) ./ sqrt(size(pp2do,2));
+    SEM_values(3,2) = std(congruency_er(:,3)) ./ sqrt(size(pp2do,2));
+
+    % calculate 95% CI's
+    t_scores = tinv([0.025  0.975], size(pp2do,2) - 1);
+
+    CI_dt_values(1,1:2) = mean(congruency_dt(:,1)) + t_scores*SEM_values(1,1);
+    CI_dt_values(2,1:2) = mean(congruency_dt(:,2)) + t_scores*SEM_values(2,1);
+    CI_dt_values(3,1:2) = mean(congruency_dt(:,3)) + t_scores*SEM_values(3,1);
+
+    CI_er_values(1,1:2) = mean(congruency_er(:,1)) + t_scores*SEM_values(1,2);
+    CI_er_values(2,1:2) = mean(congruency_er(:,2)) + t_scores*SEM_values(2,2);
+    CI_er_values(3,1:2) = mean(congruency_er(:,3)) + t_scores*SEM_values(3,2);
    
 end
 

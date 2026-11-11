@@ -465,14 +465,78 @@ bR.Position = [0.7652, 0.1100, 0.2134, 0.3412];
 % print("..\..\..\..\Manuscripts\vidi1\Figures\comp_behaviour", "-dsvg")
 % print("..\..\..\..\Manuscripts\vidi1\Figures\comp_behaviour", "-dpng")
 
-% stats stats stats
+%% stats stats stats
+
+%post-hoc pairwise comparison
 p_values = zeros(2,3);
 [h,p_values(1,1),ci,stats] = ttest(reshape(congruency_dt(1:2,:,1), [50,1]), reshape(congruency_dt(1:2,:,2), [50,1]));
-d = meanEffectSize(reshape(congruency_dt(1:2,:,1), [50,1]), reshape(congruency_dt(1:2,:,2), [50,1]), "Paired", true, "Effect", "cohen") 
 [h,p_values(1,2),ci,stats] = ttest(reshape(congruency_dt(3:4,:,1), [50,1]), reshape(congruency_dt(3:4,:,2), [50,1]));
 [h,p_values(1,3),ci,stats] = ttest2(reshape(con_dt_effect(:,1:2), [50,1]), reshape(con_dt_effect(:,3:4), [50,1]));
 [h,p_values(2,1),ci,stats] = ttest(reshape(congruency_er(1:2,:,1), [50,1]), reshape(congruency_er(1:2,:,2), [50,1]));
 [h,p_values(2,2),ci,stats] = ttest(reshape(congruency_er(3:4,:,1), [50,1]), reshape(congruency_er(3:4,:,2), [50,1]));
 [h,p_values(2,3),ci,stats] = ttest2(reshape(con_er_effect(:,1:2), [50,1]), reshape(con_er_effect(:,3:4), [50,1]));
+
+% calculate effect sizes
+cohen_ds = zeros(2,3);
+temp = meanEffectSize(reshape(congruency_dt(1:2,:,1), [50,1]), reshape(congruency_dt(1:2,:,2), [50,1]), "Paired", true, "Effect", "cohen");
+cohen_ds(1,1) = temp.Effect;
+temp = meanEffectSize(reshape(congruency_dt(3:4,:,1), [50,1]), reshape(congruency_dt(3:4,:,2), [50,1]), "Paired", true, "Effect", "cohen");
+cohen_ds(1,2) = temp.Effect;
+temp = meanEffectSize(reshape(con_dt_effect(:,1:2), [50,1]), reshape(con_dt_effect(:,3:4), [50,1]), "Paired", true, "Effect", "cohen");
+cohen_ds(1,3) = temp.Effect;
+
+temp = meanEffectSize(reshape(congruency_er(1:2,:,1), [50,1]), reshape(congruency_er(1:2,:,2), [50,1]), "Paired", true, "Effect", "cohen");
+cohen_ds(2,1) = temp.Effect;
+temp = meanEffectSize(reshape(congruency_er(3:4,:,1), [50,1]), reshape(congruency_er(3:4,:,2), [50,1]), "Paired", true, "Effect", "cohen");
+cohen_ds(2,2) = temp.Effect;
+temp = meanEffectSize(reshape(con_er_effect(:,1:2), [50,1]), reshape(con_er_effect(:,3:4), [50,1]), "Paired", true, "Effect", "cohen");
+cohen_ds(2,3) = temp.Effect;
+
+% get means neatly together
+mean_values(1,1) = mean(reshape(congruency_dt(1:2,:,1), [50,1]));
+mean_values(1,2) = mean(reshape(congruency_dt(1:2,:,2), [50,1]));
+mean_values(1,3) = mean(reshape(congruency_dt(3:4,:,1), [50,1]));
+mean_values(1,4) = mean(reshape(congruency_dt(3:4,:,2), [50,1]));
+mean_values(1,5) = mean(reshape(con_dt_effect(:,1:2), [50,1]));
+mean_values(1,6) = mean(reshape(con_dt_effect(:,3:4), [50,1]));
+
+mean_values(2,1) = mean(reshape(congruency_er(1:2,:,1), [50,1]));
+mean_values(2,2) = mean(reshape(congruency_er(1:2,:,2), [50,1]));
+mean_values(2,3) = mean(reshape(congruency_er(3:4,:,1), [50,1]));
+mean_values(2,4) = mean(reshape(congruency_er(3:4,:,2), [50,1]));
+mean_values(2,5) = mean(reshape(con_er_effect(:,1:2), [50,1]));
+mean_values(2,6) = mean(reshape(con_er_effect(:,3:4), [50,1]));
+
+% calculate SEMs
+SEM_values(1,1) = std(reshape(congruency_dt(1:2,:,1), [50,1]))./ sqrt(size(pp2do,2));
+SEM_values(1,2) = std(reshape(congruency_dt(1:2,:,2), [50,1]))./ sqrt(size(pp2do,2));
+SEM_values(1,3) = std(reshape(congruency_dt(3:4,:,1), [50,1]))./ sqrt(size(pp2do,2));
+SEM_values(1,4) = std(reshape(congruency_dt(3:4,:,2), [50,1]))./ sqrt(size(pp2do,2));
+SEM_values(1,5) = std(reshape(con_dt_effect(:,1:2), [50,1]))./ sqrt(size(pp2do,2));
+SEM_values(1,6) = std(reshape(con_dt_effect(:,3:4), [50,1]))./ sqrt(size(pp2do,2));
+
+SEM_values(2,1) = std(reshape(congruency_er(1:2,:,1), [50,1]))./ sqrt(size(pp2do,2));
+SEM_values(2,2) = std(reshape(congruency_er(1:2,:,2), [50,1]))./ sqrt(size(pp2do,2));
+SEM_values(2,3) = std(reshape(congruency_er(3:4,:,1), [50,1]))./ sqrt(size(pp2do,2));
+SEM_values(2,4) = std(reshape(congruency_er(3:4,:,2), [50,1]))./ sqrt(size(pp2do,2));
+SEM_values(2,5) = std(reshape(con_er_effect(:,1:2), [50,1]))./ sqrt(size(pp2do,2));
+SEM_values(2,6) = std(reshape(con_er_effect(:,3:4), [50,1]))./ sqrt(size(pp2do,2));
+
+% calculate 95% CI's
+t_scores = tinv([0.025  0.975], size(pp2do,2) - 1);
+
+CI_dt_values(1,1:2) = mean_values(1,1) + t_scores*SEM_values(1,1);
+CI_dt_values(2,1:2) = mean_values(1,2) + t_scores*SEM_values(1,2);
+CI_dt_values(3,1:2) = mean_values(1,3) + t_scores*SEM_values(1,3);
+CI_dt_values(4,1:2) = mean_values(1,4) + t_scores*SEM_values(1,4);
+CI_dt_values(5,1:2) = mean_values(1,5) + t_scores*SEM_values(1,5);
+CI_dt_values(6,1:2) = mean_values(1,6) + t_scores*SEM_values(1,6);
+
+CI_er_values(1,1:2) = mean_values(2,1) + t_scores*SEM_values(2,1);
+CI_er_values(2,1:2) = mean_values(2,2) + t_scores*SEM_values(2,2);
+CI_er_values(3,1:2) = mean_values(2,3) + t_scores*SEM_values(2,3);
+CI_er_values(4,1:2) = mean_values(2,4) + t_scores*SEM_values(2,4);
+CI_er_values(5,1:2) = mean_values(2,5) + t_scores*SEM_values(2,5);
+CI_er_values(6,1:2) = mean_values(2,6) + t_scores*SEM_values(2,6);
 
 end
